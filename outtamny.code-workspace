@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "automatic",
+		"maven.executable.path": "/usr/local/bin/mvn",
+		"maven.terminal.favorites": [
+			{
+				"alias": "Build Package (Skip Tests)",
+				"command": "clean package -DskipTests"
+			},
+			{
+				"alias": "Build, Test, Install",
+				"command": "clean install"
+			},
+		],
+	}
+}

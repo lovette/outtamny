@@ -1,0 +1,53 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "App",
+            "request": "launch",
+            "mainClass": "io.github.lovette.outtamny.App",
+            "projectName": "outtamny",
+            "cwd": "${workspaceFolder}/mnydata",
+            "args": [
+                // "--version",
+                // "--help",
+                "schema",
+                // "--help",
+                // "-v",
+                // "--money-type",
+                // "integer",
+                // "--skip-empty",
+                // "--schema-out",
+                // "table",
+                // "--data-out",
+                // "table",
+                // "--password",
+                // "--password:pw",
+                // "foo",
+                // "--password:env",
+                // "MNYPASSWORD",
+                // "--password:file",
+                // "mnypasswd",
+                // "--out",
+                // "-",
+                // "blah.sql",
+                // "empty.mny",
+            ],
+            // "env": {
+            //     "MNYPASSWORD": "blah"
+            // }
+            // "stepFilters": {
+            //     "classNameFilters": [
+            //         "$JDK",
+            //         "$Libraries"
+            //     ],
+            //     "skipSynthetics": true,
+            //     "skipStaticInitializers": false,
+            //     "skipConstructors": false
+            // }
+        }
+    ]
+}
