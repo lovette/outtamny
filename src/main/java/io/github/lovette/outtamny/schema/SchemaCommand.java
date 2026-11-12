@@ -1,8 +1,10 @@
 package io.github.lovette.outtamny.schema;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.RoundingMode;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ import static io.github.lovette.outtamny.SharedUtils.sqlNameU;
 import io.github.lovette.outtamny.App;
 import io.github.lovette.outtamny.BaseCommand;
 import io.github.lovette.outtamny.SharedUtils;
+import io.github.lovette.outtamny.UserFacingException;
 import io.github.spannm.jackcess.Column;
 import io.github.spannm.jackcess.DataType;
 import io.github.spannm.jackcess.Database;
@@ -134,7 +137,7 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
 
         mnyPath = mnyPath.toAbsolutePath().normalize();
         if (!Files.isRegularFile(mnyPath)) {
-            throw new ParameterException(spec.commandLine(), "Error: '" + mnyPath + "': No such file.");
+            throw new FileNotFoundException("Error: '" + mnyPath + "': No such file.");
         }
 
         String mnyPassword = "";
@@ -145,10 +148,13 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
             mnyPassword = mnyPasswordInline;
         } else if (mnyPasswordEnv != null) {
             mnyPassword = System.getenv(mnyPasswordEnv);
+            if (mnyPassword == null) {
+                throw new UserFacingException("Error: Environment variable '" + mnyPasswordEnv + "' is not set.");
+            }
         } else if (mnyPasswordFile != null) {
             mnyPasswordFile = mnyPasswordFile.toAbsolutePath().normalize();
             if (!Files.isRegularFile(mnyPasswordFile)) {
-                throw new ParameterException(spec.commandLine(), "Error: '" + mnyPasswordFile + "': No such file.");
+                throw new FileNotFoundException("Error: '" + mnyPasswordFile + "': No such file.");
             }
             mnyPassword = Files.readString(mnyPasswordFile).stripTrailing();
         }
@@ -165,11 +171,11 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
         if (isOutputStdout()) {
             if (getVerbosityLevel() > 0) {
                 String err = "Error: Verbosity level must be quiet when output is to stdout.";
-                throw new ParameterException(spec.commandLine(), err);
+                throw new UserFacingException(err);
             }
             if (!isSingleStreamOut()) {
                 String err = "Error: When output is to stdout, '--schema-out' and '--data-out' must each be 'combined' or 'none'.";
-                throw new ParameterException(spec.commandLine(), err);
+                throw new UserFacingException(err);
             }
 
             combinedSchemaPath = outDirOrFilePath;
@@ -187,10 +193,10 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
                 combinedSchemaPath = outDirOrFilePath; // File will be overwritten if exists!
             } else if (Files.exists(outDirOrFilePath)) {
                 String err = "Error: '" + outDirOrFilePath + "': Already exists and will not be overwritten.";
-                throw new ParameterException(spec.commandLine(), err);
+                throw new FileAlreadyExistsException(err);
             } else {
                 String err = "Error: '" + outDirOrFilePath + "': No such directory.";
-                throw new ParameterException(spec.commandLine(), err);
+                throw new FileNotFoundException(err);
             }
 
             tableOutDirPath = combinedSchemaPath.getParent();
@@ -202,8 +208,7 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
             }
 
             if (!Files.isDirectory(tableOutDirPath)) {
-                throw new ParameterException(spec.commandLine(),
-                        "Error: '" + tableOutDirPath + "': No such directory.");
+                throw new FileNotFoundException("Error: '" + tableOutDirPath + "': No such directory.");
             }
         }
 
@@ -333,8 +338,7 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
             }
 
             if (schemaWriter == null && dataWriter == null) {
-                throw new ParameterException(spec.commandLine(),
-                        "Options '--schema-out' and '--data-out' cannot both be set to 'none'.");
+                throw new UserFacingException("Options '--schema-out' and '--data-out' cannot both be set to 'none'.");
             }
 
             SchemaTableOut to = new SchemaTableOut(t, schemaWriter, indexWriter, dataWriter);
