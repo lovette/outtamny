@@ -307,7 +307,7 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
                     indexWriter = schemaWriter;
                 } else if (schemaOutput == OutputScheme.split) {
                     schemaWriter = getWriterForName.apply(TABLES_SQL);
-                    indexWriter = schemaWriter;
+                    indexWriter = getWriterForName.apply(INDEXES_SQL);
                 } else if (schemaOutput == OutputScheme.table_combined) {
                     schemaWriter = getWriterForName.apply(t_name + ".sql");
                     indexWriter = schemaWriter;
@@ -324,7 +324,7 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
                 if (isOutputStdout()) {
                     dataWriter = getWriterForName.apply(OUT_STDOUT);
                 } else if (isSingleStreamOut()) {
-                    dataWriter = schemaWriter;
+                    dataWriter = getWriterForName.apply(combinedSchemaPath.toString());
                 } else if (dataOutput == OutputScheme.split) {
                     dataWriter = getWriterForName.apply(DATA_SQL);
                 } else if (dataOutput == OutputScheme.table_combined) {
