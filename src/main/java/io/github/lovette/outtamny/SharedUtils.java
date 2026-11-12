@@ -4,8 +4,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import io.github.spannm.jackcess.DataType;
 
@@ -28,6 +31,73 @@ public class SharedUtils {
             "RESTRICT", "RETURNING", "RIGHT", "ROLLBACK", "ROW", "ROWS", "SAVEPOINT", "SELECT", "SET", "TABLE", "TEMP",
             "TEMPORARY", "THEN", "TIES", "TO", "TRANSACTION", "TRIGGER", "UNBOUNDED", "UNION", "UNIQUE", "UPDATE",
             "USING", "VACUUM", "VALUES", "VIEW", "VIRTUAL", "WHEN", "WHERE", "WINDOW", "WITH", "WITHOUT"));
+
+    /**
+     * Verbosity levels for controlling output detail.
+     * ERROR: Only error messages.
+     * WARN: Warnings and errors.
+     * INFO: Informational messages, warnings, and errors.
+     * DEBUG: Debug messages, informational messages, warnings, and errors.
+     * TRACE: All messages including trace-level details.
+     */
+    public enum Verbosity {
+        ERROR(0),
+        WARN(1),
+        INFO(2),
+        DEBUG(3),
+        TRACE(4);
+
+        private final int verbosityLevel;
+        private static final Map<Integer, Verbosity> BY_LEVEL = Arrays.stream(values())
+                .collect(Collectors.toMap(Verbosity::getVerbosityLevel, Function.identity()));
+
+        Verbosity(int verbosityLevel) {
+            this.verbosityLevel = verbosityLevel;
+        }
+
+        /**
+         * Returns the Verbosity level corresponding to the given integer level.
+         * If the level is not recognized, it defaults to TRACE.
+         *
+         * @param level the integer verbosity level
+         * @return the corresponding Verbosity enum value
+         */
+        public static Verbosity fromLevel(int level) {
+            return BY_LEVEL.getOrDefault(level, TRACE);
+        }
+
+        /**
+         * Returns the integer verbosity level associated with this Verbosity.
+         *
+         * @return the integer verbosity level
+         */
+        public int getVerbosityLevel() {
+            return verbosityLevel;
+        }
+
+        /**
+         * Checks if this verbosity level is the given verbosity level or higher.
+         *
+         * @param other the other verbosity level to compare against
+         * @return true if this verbosity level is greater than or equal to the other,
+         *         false otherwise
+         */
+        public boolean isAtLeast(Verbosity other) {
+            return this.verbosityLevel >= other.verbosityLevel;
+        }
+
+        /**
+         * Checks if this verbosity level is strictly higher than the given verbosity
+         * level.
+         *
+         * @param other the other verbosity level to compare against
+         * @return true if this verbosity level is greater than the other, false
+         *         otherwise
+         */
+        public boolean isMoreThan(Verbosity other) {
+            return this.verbosityLevel > other.verbosityLevel;
+        }
+    }
 
     /**
      * Returns a SQL identifier quoted with double quotes if necessary.

@@ -2,6 +2,7 @@ package io.github.lovette.outtamny;
 
 import java.io.PrintWriter;
 
+import io.github.lovette.outtamny.SharedUtils.Verbosity;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Spec;
 
@@ -11,6 +12,8 @@ public abstract class BaseCommand {
     // before invoking run() or call().
     @Spec
     protected CommandSpec spec;
+
+    private Verbosity cachedVerbosity;
 
     /**
      * Gets the standard output PrintWriter.
@@ -38,8 +41,11 @@ public abstract class BaseCommand {
      *
      * @return the verbosity level as an integer.
      */
-    protected int getVerbosityLevel() {
-        boolean[] verbosity = spec.findOption("verbose").getValue();
-        return verbosity.length;
+    protected Verbosity getVerbosityLevel() {
+        if (cachedVerbosity == null) {
+            boolean[] verbosity = spec.findOption("verbose").getValue();
+            cachedVerbosity = Verbosity.fromLevel(verbosity.length);
+        }
+        return cachedVerbosity;
     }
 }

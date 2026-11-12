@@ -27,6 +27,7 @@ import static io.github.lovette.outtamny.SharedUtils.sqlNameU;
 import io.github.lovette.outtamny.App;
 import io.github.lovette.outtamny.BaseCommand;
 import io.github.lovette.outtamny.SharedUtils;
+import io.github.lovette.outtamny.SharedUtils.Verbosity;
 import io.github.lovette.outtamny.UserFacingException;
 import io.github.spannm.jackcess.Column;
 import io.github.spannm.jackcess.DataType;
@@ -169,7 +170,7 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
         Path tableOutDirPath;
 
         if (isOutputStdout()) {
-            if (getVerbosityLevel() > 0) {
+            if (getVerbosityLevel().isMoreThan(Verbosity.ERROR)) {
                 String err = "Error: Verbosity level must be quiet when output is to stdout.";
                 throw new UserFacingException(err);
             }
@@ -286,7 +287,7 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
             Table t = db.getTable(t_name);
 
             if (t.getRowCount() == 0 && skipEmpty) {
-                if (getVerbosityLevel() > 0) {
+                if (getVerbosityLevel().isAtLeast(Verbosity.INFO)) {
                     stdOut().println("Skipping empty table: " + t_name);
                 }
                 continue; // Skip empty table
@@ -345,7 +346,6 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
 
             tableOuts.put(t_name, to);
         }
-
     }
 
     /**
@@ -384,7 +384,7 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
 
             int n_rows = to.table.getRowCount();
 
-            if (getVerbosityLevel() > 0) {
+            if (getVerbosityLevel().isAtLeast(Verbosity.INFO)) {
                 stdOut().println(String.format("%-35s rows=%d", to.table.getName(), n_rows));
             }
 
