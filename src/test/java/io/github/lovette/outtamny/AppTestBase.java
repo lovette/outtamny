@@ -14,15 +14,14 @@ import picocli.CommandLine;
 /**
  * Base class for unit tests that provides common setup and utility methods.
  */
-public abstract class BaseTest {
-    protected CommandLine cmd;
-    protected int exitCode;
+public abstract class AppTestBase {
     private StringWriter outWriter;
     private StringWriter errWriter;
 
     @BeforeEach
-    void initTest() {
-        cmd = createCommandLine();
+    void initWriters() {
+        outWriter = new StringWriter();
+        errWriter = new StringWriter();
     }
 
     /**
@@ -33,57 +32,56 @@ public abstract class BaseTest {
     protected CommandLine createCommandLine() {
         CommandLine cmd = App.createCommandLine();
 
-        outWriter = new StringWriter();
         cmd.setOut(new PrintWriter(outWriter));
-
-        errWriter = new StringWriter();
         cmd.setErr(new PrintWriter(errWriter));
-
-        exitCode = -1;
 
         return cmd;
     }
 
     /**
      * Executes the command with the specified arguments and asserts that the exit
-     * code is zero and stderr is empty.
+     * code is zero and 'stderr' is empty.
      *
      * @param args the command-line arguments to pass to the command.
      */
     protected void executeCommand(String... args) {
-        exitCode = cmd.execute(args);
+        CommandLine cmd = createCommandLine();
+        int exitCode = cmd.execute(args);
         assertThat(exitCode).isZero();
         assertThat(stderr()).isEmpty();
     }
 
     /**
      * Executes the command with the specified arguments and asserts that the exit
-     * code matches the expected exit code.
+     * code matches the expected exit code. 'stdout' and 'stderr' are not checked.
      *
      * @param expectedExitCode the expected exit code of the command.
      * @param args             the command-line arguments to pass to the command.
      */
     protected void executeCommand(int expectedExitCode, String... args) {
-        exitCode = cmd.execute(args);
+        CommandLine cmd = createCommandLine();
+        int exitCode = cmd.execute(args);
         assertThat(exitCode).isEqualTo(expectedExitCode);
     }
 
     /**
      * Returns the standard output captured during the command execution.
+     * Trailing whitespace is stripped from the captured output.
      *
      * @return the captured standard output as a string.
      */
     protected String stdout() {
-        return outWriter.toString();
+        return outWriter.toString().stripTrailing();
     }
 
     /**
      * Returns the standard error output captured during the command execution.
+     * Trailing whitespace is stripped from the captured output.
      *
      * @return the captured standard error output as a string.
      */
     protected String stderr() {
-        return errWriter.toString();
+        return errWriter.toString().stripTrailing();
     }
 
     /**
@@ -92,6 +90,7 @@ public abstract class BaseTest {
      *
      * @param relativePath the relative path to the test resource file.
      * @return the Path to the test resource file.
+     * @throws IllegalArgumentException if the test resource file does not exist.
      */
     protected Path resourcePath(String relativePath) {
         Path resourcesDirPath = Path.of("src", "test", "resources").toAbsolutePath();

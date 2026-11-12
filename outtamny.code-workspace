@@ -6,6 +6,14 @@
 	],
 	"settings": {
 		"java.configuration.updateBuildConfiguration": "automatic",
+		"java.test.config": {
+			"vmArgs": [
+				"-Xshare:off",
+				"-XX:+EnableDynamicAgentLoading",
+				"--add-opens",
+				"java.base/java.util=ALL-UNNAMED"
+			]
+		},
 		"maven.executable.path": "/usr/local/bin/mvn",
 		"maven.terminal.favorites": [
 			{

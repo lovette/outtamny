@@ -358,6 +358,17 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
     private void writeSchemaFiles(Database db)
             throws IOException {
 
+        if (getVerbosityLevel().isAtLeast(Verbosity.DEBUG)) {
+            LinkedHashSet<Path> writerPaths = new LinkedHashSet<>();
+            for (SchemaTableOutWriter tow : tableOutWriters.values()) {
+                writerPaths.add(tow.getWriterPath());
+            }
+
+            for (Path p : writerPaths) {
+                stdOut().println("Writing file: '" + p + "'");
+            }
+        }
+
         SchemaTableOutWriter combinedWriter = isSingleStreamOut() ? tableOutWriters.values().iterator().next() : null;
 
         if (combinedWriter != null) {

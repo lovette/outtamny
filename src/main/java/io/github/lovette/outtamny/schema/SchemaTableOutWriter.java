@@ -62,6 +62,10 @@ class SchemaTableOutWriter {
         }
     }
 
+    public Path getWriterPath() {
+        return this.writerPath;
+    }
+
     /**
      * Sets the writer to use for standard output.
      *
