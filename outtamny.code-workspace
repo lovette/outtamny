@@ -11,7 +11,8 @@
 				"-Xshare:off",
 				"-XX:+EnableDynamicAgentLoading",
 				"--add-opens",
-				"java.base/java.util=ALL-UNNAMED"
+				"java.base/java.util=ALL-UNNAMED",
+				"--enable-native-access=ALL-UNNAMED"
 			]
 		},
 		"maven.executable.path": "/usr/local/bin/mvn",
