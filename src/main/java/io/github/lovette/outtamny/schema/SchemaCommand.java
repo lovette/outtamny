@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -438,9 +439,9 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
     private void writeCombinedSchema() throws IOException {
         SchemaTableOutWriter combinedWriter = new SchemaTableOutWriter(combinedSchemaPath);
         Path schemaDir = combinedSchemaPath.getParent();
-        List<Path> schemaPaths = new ArrayList<>();
-        List<Path> indexesPaths = new ArrayList<>();
-        List<Path> dataPaths = new ArrayList<>();
+        LinkedHashSet<Path> schemaPaths = new LinkedHashSet<>();
+        LinkedHashSet<Path> indexesPaths = new LinkedHashSet<>();
+        LinkedHashSet<Path> dataPaths = new LinkedHashSet<>();
 
         for (SchemaTableOutWriter tow : tableOutWriters.values()) {
             combinedWriter.addSubWriter(tow);

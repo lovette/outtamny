@@ -9,7 +9,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.LinkedHashSet;
 
 /**
  * Handles writing output to a specific file for table schema and data.
@@ -26,6 +26,7 @@ class SchemaTableOutWriter {
     boolean transactionWritten = false;
     private boolean nestedTransactionWritten = false; // track nested writers
     private boolean isStdout;
+    private LinkedHashSet<Path> writtenBlockPaths = new LinkedHashSet<>();
 
     // Wrap 'PrintWriter' to prevent "try-with-resources" from closing the output
     // stream.
@@ -244,12 +245,16 @@ class SchemaTableOutWriter {
      * Writes a block of paths to the output file, each prefixed with the ".read"
      * command. Opens a new transaction if necessary before writing the paths.
      *
-     * @param relPaths the list of relative paths to include in the block
+     * @param relPaths the set of relative paths to include in the block
      * @throws IOException if an I/O error occurs while writing to the file
      */
-    public void writePathsBlock(List<Path> relPaths) throws IOException {
+    public void writePathsBlock(LinkedHashSet<Path> relPaths) throws IOException {
+        // Don't include the same paths in multiple blocks
+        relPaths.removeAll(writtenBlockPaths);
         if (relPaths.isEmpty())
             return;
+
+        writtenBlockPaths.addAll(relPaths);
 
         StringWriter sw = new StringWriter();
         for (Path relPath : relPaths) {
