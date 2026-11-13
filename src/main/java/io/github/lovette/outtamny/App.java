@@ -15,7 +15,7 @@ import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.UnmatchedArgumentException;
 
-@Command(name = "outtamny", version = "1.0.0", mixinStandardHelpOptions = true, description = "Gets your financial data outta a Microsoft Money data file.", subcommands = {
+@Command(name = "outtamny", version = "0.5.0-SNAPSHOT", mixinStandardHelpOptions = true, description = "Gets your financial data outta a Microsoft Money data file.", subcommands = {
         SchemaCommand.class,
 })
 public class App extends BaseCommand implements Runnable {

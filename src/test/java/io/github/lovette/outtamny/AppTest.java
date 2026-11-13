@@ -43,6 +43,6 @@ public class AppTest extends AppTestBase {
     @DisplayName("outtamny --version")
     public void testVersion() {
         executeCommand("--version");
-        assertThat(stdout()).hasLineCount(1).hasSizeBetween(5, 10);
+        assertThat(stdout()).hasLineCount(1).hasSizeBetween("0.0.0".length(), "0.0.0-SNAPSHOT".length());
     }
 }
