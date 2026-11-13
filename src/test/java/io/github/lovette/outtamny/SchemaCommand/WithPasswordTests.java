@@ -49,8 +49,8 @@ public class WithPasswordTests extends SchemaCommandTestBase {
     @Test
     @DisplayName("schema --password:env")
     public void testPasswordEnvVar() throws Exception {
-        withEnvironmentVariable("MNYPASSWORD", mnyPassword).execute(() -> {
-            executeSchemaCommand("-vv", "--password:env", "MNYPASSWORD");
+        withEnvironmentVariable("JUNITMNYPASSWORD", mnyPassword).execute(() -> {
+            executeSchemaCommand("-vv", "--password:env", "JUNITMNYPASSWORD");
         });
 
         assertThat(stdout()).isNotEmpty();
@@ -60,7 +60,7 @@ public class WithPasswordTests extends SchemaCommandTestBase {
     @Test
     @DisplayName("schema --password:env missing")
     public void testPasswordEnvVarMissing() {
-        executeSchemaCommand(1, "-vv", "--password:env", "MNYPASSWORD");
+        executeSchemaCommand(1, "-vv", "--password:env", "JUNITMNYPASSWORD");
 
         assertThat(stdout()).isEmpty();
         assertThat(stderr()).startsWith("Error:").endsWith("is not set.");
