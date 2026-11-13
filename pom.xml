@@ -102,6 +102,10 @@
               <!-- Required for sqlite-jdbc -->
               --enable-native-access=ALL-UNNAMED
             </argLine>
+            <systemPropertyVariables>
+              <!-- Don't output ANSI escape codes in tests. -->
+              <picocli.ansi>false</picocli.ansi>
+            </systemPropertyVariables>
           </configuration>
         </plugin>
         <plugin>

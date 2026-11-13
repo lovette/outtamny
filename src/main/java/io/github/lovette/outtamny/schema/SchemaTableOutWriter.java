@@ -1,14 +1,14 @@
 package io.github.lovette.outtamny.schema;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.LinkedHashSet;
 
 /**
@@ -163,8 +163,7 @@ class SchemaTableOutWriter {
 
         // stdOut().println((append ? "Appending to " : "Writing to ") + writerPath);
 
-        return new BufferedWriter(
-                new FileWriter(writerPath.toString(), StandardCharsets.UTF_8, append));
+        return Files.newBufferedWriter(writerPath, append ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
     }
 
     /**
@@ -258,7 +257,8 @@ class SchemaTableOutWriter {
 
         StringWriter sw = new StringWriter();
         for (Path relPath : relPaths) {
-            sw.write(".read \"" + relPath + "\"\n");
+            // Wrap in single quotes to prevent issues on Windows!
+            sw.write(".read '" + relPath + "'\n");
         }
         sw.write("\n");
 
@@ -305,7 +305,10 @@ class SchemaTableOutWriter {
             needFooter = false;
         }
 
-        getWriter().flush();
+        // If writing to stdout let's flush to ensure all output is written immediately
+        try (Writer w = getWriter()) {
+            w.flush();
+        }
     }
 
     /**
