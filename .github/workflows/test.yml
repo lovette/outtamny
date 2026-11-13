@@ -1,0 +1,33 @@
+# Runs unit tests with a matrix of Java versions.
+
+name: Java unit tests
+
+on:
+  # Allow triggering manually from GitHub UI.
+  workflow_dispatch:
+
+  # Allow triggering from other workflows.
+  workflow_call:
+
+jobs:
+  build:
+    name: Test on Java ${{ matrix.java }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # Test all versions even if one fails
+      matrix:
+        java: ['25', '27']
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v6
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Run Maven Tests
+        run: mvn --batch-mode test -Dmaven.compiler.release=${{ matrix.java }}
