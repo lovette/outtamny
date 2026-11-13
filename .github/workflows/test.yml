@@ -9,16 +9,25 @@ on:
   # Allow triggering from other workflows.
   workflow_call:
 
+defaults:
+  run:
+    shell: bash # Use bash instead of PowerShell on Windows
+
 jobs:
   build:
-    name: Test on Java ${{ matrix.java }}
-    runs-on: ubuntu-latest
+    name: Test on ${{ matrix.os }} with Java ${{ matrix.java }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false # Test all versions even if one fails
       matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
         java: ['25', '27']
 
     steps:
+      - name: Install SQLite3 on Windows
+        if: matrix.os == 'windows-latest'
+        run: choco install sqlite --yes --no-progress
+
       - name: Check out repository
         uses: actions/checkout@v7
 
@@ -29,5 +38,13 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Run Maven Tests
-        run: mvn --batch-mode test -Dmaven.compiler.release=${{ matrix.java }}
+      - name: Maven build and test
+        run: mvn --batch-mode package -Dmaven.compiler.release=${{ matrix.java }}
+
+      - name: Exec --help
+        run: |
+          JAR_PATH=$(find target -maxdepth 1 -name "outtamny-*.jar" | head -n 1)
+          echo "Testing executable: $JAR_PATH"
+          java -jar "$JAR_PATH" --help
+        env:
+          NO_COLOR: 1
