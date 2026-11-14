@@ -26,21 +26,18 @@ import static io.github.lovette.outtamny.SharedUtils.sqlNameQ;
 import static io.github.lovette.outtamny.SharedUtils.sqlNameU;
 
 import io.github.lovette.outtamny.App;
-import io.github.lovette.outtamny.BaseCommand;
+import io.github.lovette.outtamny.BaseSubcommand;
 import io.github.lovette.outtamny.SharedUtils;
 import io.github.lovette.outtamny.SharedUtils.Verbosity;
 import io.github.lovette.outtamny.UserFacingException;
 import io.github.spannm.jackcess.Column;
 import io.github.spannm.jackcess.DataType;
 import io.github.spannm.jackcess.Database;
-import io.github.spannm.jackcess.DatabaseBuilder;
 import io.github.spannm.jackcess.Index;
 import io.github.spannm.jackcess.Row;
 import io.github.spannm.jackcess.Table;
-import io.github.spannm.jackcess.encrypt.CryptCodecProvider;
 import io.github.spannm.jackcess.encrypt.InvalidCredentialsException;
 import io.github.spannm.jackcess.impl.IndexImpl;
-import io.github.spannm.jackcess.util.ErrorHandler.Location;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
@@ -53,7 +50,7 @@ import picocli.CommandLine.ParentCommand;
  * importable into SQLite.
  */
 @Command(name = "schema", description = "Create SQL to import table schemas and data into SQLite.", sortOptions = false)
-public class SchemaCommand extends BaseCommand implements Callable<Integer> {
+public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
     enum OutputScheme {
         combined, // A single file (or stdout)
@@ -92,9 +89,6 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
     @Option(names = { "--skip-empty" }, description = "Skip empty tables.", negatable = true, order = 10)
     private boolean skipEmpty = false;
 
-    @Option(names = { "-h", "--help" }, usageHelp = true, description = "Display this help and exit", order = 15)
-    private boolean help;
-
     @Parameters(index = "0", paramLabel = "MNYFILE", description = "Money data file (.mny).")
     private Path mnyPath;
 
@@ -115,7 +109,7 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
      * Subcommand entry point.
      */
     @Override
-    public Integer call() throws Exception {
+    public Integer call() throws FileNotFoundException, IOException {
         if (mnyPath == null) {
             throw new ParameterException(spec.commandLine(),
                     "Error: MNYFILE path must be specified.");
@@ -124,25 +118,6 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
         mnyPath = mnyPath.toAbsolutePath().normalize();
         if (!Files.isRegularFile(mnyPath)) {
             throw new FileNotFoundException("Error: '" + mnyPath + "': No such file.");
-        }
-
-        String mnyPassword = "";
-
-        if (mnyPasswordPrompt != null) {
-            mnyPassword = mnyPasswordPrompt;
-        } else if (mnyPasswordInline != null) {
-            mnyPassword = mnyPasswordInline;
-        } else if (mnyPasswordEnv != null) {
-            mnyPassword = System.getenv(mnyPasswordEnv);
-            if (mnyPassword == null) {
-                throw new UserFacingException("Error: Environment variable '" + mnyPasswordEnv + "' is not set.");
-            }
-        } else if (mnyPasswordFile != null) {
-            mnyPasswordFile = mnyPasswordFile.toAbsolutePath().normalize();
-            if (!Files.isRegularFile(mnyPasswordFile)) {
-                throw new FileNotFoundException("Error: '" + mnyPasswordFile + "': No such file.");
-            }
-            mnyPassword = Files.readString(mnyPasswordFile).stripTrailing();
         }
 
         if (dataOutput == OutputScheme.combined && schemaOutput != OutputScheme.combined) {
@@ -198,17 +173,8 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
             }
         }
 
-        try (Database db = new DatabaseBuilder()
-                .withPath(mnyPath)
-                .withReadOnly(true)
-                .withCodecProvider(new CryptCodecProvider(mnyPassword))
-                .open()) {
-
-            db.setErrorHandler(this::handleColumnError);
-
-            List<String> t_names = new ArrayList<>(db.getTableNames());
-
-            Collections.sort(t_names);
+        try (Database db = openMnyFile(mnyPath)) {
+            List<String> t_names = getMnyTableNames(db);
 
             initTableOuts(db, tableOutDirPath, t_names);
 
@@ -815,35 +781,5 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
         }
 
         return false;
-    }
-
-    Object handleColumnError(Column column, byte[] columnData, Location location, Exception error) {
-        String err = String.format("Error reading row/col value: %s(%s): %s",
-                column.getTable().getName(),
-                column.getName(),
-                error.getMessage());
-
-        Object ret = null; // substitute for value causing the exception
-
-        if (error instanceof java.time.DateTimeException && columnData != null && columnData.length == 8) {
-            // Microsoft Access stores its DateTime fields as an 8-byte double.
-            // ByteBuffer buf = ByteBuffer.wrap(columnData).order(ByteOrder.LITTLE_ENDIAN);
-            // double columnDouble = buf.getDouble();
-
-            // Deserialize the bytes into the underlying strongly-typed Object.
-            // if (column instanceof ColumnImpl) {
-            // ColumnImpl columnImpl = (ColumnImpl) column;
-            // Object decodedValue = columnImpl.read(columnData);
-            // }
-
-            ret = java.time.LocalDateTime.of(1900, 1, 1, 0, 0);
-            err = String.format("%s: using %s instead", err, ret);
-        } else {
-            err = String.format("%s: using NULL instead", err);
-        }
-
-        stdErr().println(err);
-
-        return ret;
     }
 }
