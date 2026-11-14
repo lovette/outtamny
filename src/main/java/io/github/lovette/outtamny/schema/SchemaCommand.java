@@ -18,16 +18,12 @@ import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
-import static io.github.lovette.outtamny.SharedUtils.getMnyFileOutPath;
 import static io.github.lovette.outtamny.SharedUtils.getPathStem;
 import static io.github.lovette.outtamny.SharedUtils.getPathSuffix;
 import static io.github.lovette.outtamny.SharedUtils.joinWithParens;
-import static io.github.lovette.outtamny.SharedUtils.sqlNameQ;
-import static io.github.lovette.outtamny.SharedUtils.sqlNameU;
 
 import io.github.lovette.outtamny.App;
 import io.github.lovette.outtamny.BaseSubcommand;
-import io.github.lovette.outtamny.SharedUtils;
 import io.github.lovette.outtamny.SharedUtils.Verbosity;
 import io.github.lovette.outtamny.UserFacingException;
 import io.github.spannm.jackcess.Column;
@@ -735,7 +731,8 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
      * @param t the Jackcess DataType to convert
      * @return the SQLite data type as a string
      */
-    private String sqliteDataType(DataType t) {
+    @Override
+    protected String sqliteDataType(DataType t) {
         switch (t) {
             case MONEY:
             case NUMERIC:
@@ -745,7 +742,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                     return "INTEGER";
                 return "NUMERIC";
             default:
-                return SharedUtils.sqliteDataType(t);
+                return super.sqliteDataType(t);
         }
     }
 
@@ -755,11 +752,12 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
      * @param obj the value to convert
      * @return the SQL value
      */
-    private String sqlValue(Object obj) {
+    @Override
+    protected String sqlValue(Object obj) {
         if (obj instanceof java.math.BigDecimal bd && moneyType == MoneyType.integer) {
             return bd.setScale(4, RoundingMode.HALF_UP).movePointRight(4).toBigInteger().toString();
         }
-        return SharedUtils.sqlValue(obj);
+        return super.sqlValue(obj);
     }
 
     boolean columnHasNulls(Table t, Column c) {
