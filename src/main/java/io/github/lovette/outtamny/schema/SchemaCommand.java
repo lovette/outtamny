@@ -45,7 +45,7 @@ import picocli.CommandLine.ParentCommand;
  * data file
  * importable into SQLite.
  */
-@Command(name = "schema", description = "Create SQL to import table schemas and data into SQLite.", sortOptions = false)
+@Command(name = "schema", description = "Output SQL that creates Money tables, indexes and data in SQLite.", sortOptions = false)
 public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
     enum OutputScheme {

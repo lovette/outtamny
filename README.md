@@ -53,7 +53,7 @@ Usage: outtamny schema [-hv] [-p] [--[no-]skip-empty] [-d=<dataOutput>]
                        [--password:env=ENVVAR] [--password:file=FILE]
                        [--password:pw=PASSWORD] [-s=<schemaOutput>] MNYFILE
 
-Create SQL to import table schemas and data into SQLite.
+Output SQL that creates Money tables, indexes and data in SQLite.
 
       MNYFILE                     Money data file (.mny).
   -v, --verbose                   Increase verbose level.
