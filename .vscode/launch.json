@@ -6,14 +6,24 @@
     "configurations": [
         {
             "type": "java",
-            "name": "App",
+            "name": "outtamny",
             "request": "launch",
             "mainClass": "io.github.lovette.outtamny.App",
             "projectName": "outtamny",
             "cwd": "${workspaceFolder}/mnydata",
             "args": [
                 // "--version",
-                // "--help",
+                "--help"
+            ]
+        },
+        {
+            "type": "java",
+            "name": "schema",
+            "request": "launch",
+            "mainClass": "io.github.lovette.outtamny.App",
+            "projectName": "outtamny",
+            "cwd": "${workspaceFolder}/mnydata",
+            "args": [
                 "schema",
                 // "--help",
                 // "-v",
@@ -48,6 +58,19 @@
             //     "skipStaticInitializers": false,
             //     "skipConstructors": false
             // }
+        },
+        {
+            "type": "java",
+            "name": "tables",
+            "request": "launch",
+            "mainClass": "io.github.lovette.outtamny.App",
+            "projectName": "outtamny",
+            "cwd": "${workspaceFolder}/mnydata",
+            "args": [
+                "tables",
+                // "--help",
+                "empty.mny",
+            ],
         }
     ]
 }

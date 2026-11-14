@@ -25,7 +25,7 @@ public class AppTest extends AppTestBase {
     public void testUnknownSubcommand() {
         executeCommand(2, "foo");
         assertThat(stderr()).containsIgnoringNewLines("Error: Unknown command 'foo'.")
-                .containsIgnoringNewLines("Possible commands are: [schema]")
+                .containsIgnoringNewLines("Possible commands are: [")
                 .containsIgnoringNewLines("Try 'outtamny --help' for more information.");
     }
 

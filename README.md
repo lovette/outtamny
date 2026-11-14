@@ -26,7 +26,7 @@ The `schema` command generates all the SQL necessary to recreate table schemas, 
 java -jar outtamny.jar schema --out - src/test/resources/sunset-sample.mny | sqlite3 sample.db
 ```
 
-### Main command
+## Main command
 
 ```bash
 % java -jar outtamny.jar --help
@@ -43,7 +43,7 @@ Commands:
   schema  Create SQL to import table schemas and data into SQLite.
 ```
 
-### Command `schema`
+## Command `schema`
 
 ```bash
 % java -jar outtamny.jar schema --help
@@ -79,7 +79,7 @@ Output SQL that creates Money tables, indexes and data in SQLite.
   -h, --help                      Display this help and exit
 ```
 
-## Generating SQL
+### Generating SQL
 
 The `schema` command requires at minimum the Money data file path. By default, output is written as an SQL file containing the schema and data for all tables, written alongside the Money data file, using the same filename with a `.sql` extension. The `--out` option accepts a destination directory, a file path to write the combined SQL output, or `-` for standard output. The destination directory must already exist.
 
@@ -93,6 +93,9 @@ The output layout is set with `--schema-out` and `--data-out` options. Besides a
 java -jar outtamny.jar schema --schema-out split --data-out none --out ./export ./data/finance.mny
 ```
 
+### Money Column Types
+
+SQLite does not have a natively supported fixed decimal [column data type](https://www.sqlite.org/datatype3.html) that can store and manipulate money values accurately. The `--money-type` option allows you to choose to store money values as `numeric` (default), `text`, or `integer`. This allows the database to store money values in a format that preserves decimal accuracy and suits your application's needs.
 Output layouts for schema and data are:
 
 | Value | Output |
@@ -103,8 +106,29 @@ Output layouts for schema and data are:
 | `table` | Separate schema, index, and data output per table |
 | `none` | Do not write that output category |
 
+## Command `tables`
 
-### Password Protection
+```bash
+% java -jar outtamny.jar tables --help
+
+Usage: outtamny tables [-hv] [-p] [--password:env=ENVVAR] [--password:
+                       file=FILE] [--password:pw=PASSWORD] MNYFILE
+
+List Money database table names.
+
+      MNYFILE                Money data file (.mny).
+  -p, --password             Prompt for the password for the Money data file.
+      --password:pw=PASSWORD The password for the Money data file (may be
+                             visible in shell history).
+      --password:file=FILE   The file containing the password for the Money
+                             data file.
+      --password:env=ENVVAR  The environment variable containing the password
+                             for the Money data file.
+  -v, --verbose              Increase verbose level.
+  -h, --help                 Display this help and exit
+```
+
+## Password Protection
 
 Money data files can be protected by a password. There are various ways to provide the password to `outtamny`.
 
@@ -129,10 +153,6 @@ java -jar outtamny.jar schema --password:file ./secrets/mny-password.txt ./data/
 The final option is `--password:pw PASSWORD` which accepts a literal password on the command line. This is the least secure since it may be visible in shell history.
 
 **Data exported to SQLite will no longer be protected by a password.** Standard public-domain SQLite does not include built-in encryption. Because SQLite stores the entire database in a single plain-text file, anyone with read access to that file can view its contents unless you use a specialized extension, a custom fork, or operating-system-level encryption.
-
-### Money Column Types
-
-SQLite does not have a natively supported fixed decimal [column data type](https://www.sqlite.org/datatype3.html) that can store and manipulate money values accurately. The `--money-type` option allows you to choose to store money values as `numeric` (default), `text`, or `integer`. This allows the database to store money values in a format that preserves decimal accuracy and suits your application's needs.
 
 ## Development
 

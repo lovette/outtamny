@@ -6,6 +6,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 
 import io.github.lovette.outtamny.schema.SchemaCommand;
+import io.github.lovette.outtamny.tables.TablesCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IExecutionExceptionHandler;
@@ -17,7 +18,7 @@ import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.UnmatchedArgumentException;
 
 @Command(name = "outtamny", version = "0.5.1-SNAPSHOT", description = "Gets your financial data outta a Microsoft Money data file.", sortOptions = false, subcommands = {
-        SchemaCommand.class,
+        SchemaCommand.class, TablesCommand.class,
 })
 public class App extends BaseCommand implements Runnable {
 
