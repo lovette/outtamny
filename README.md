@@ -1,7 +1,6 @@
 # outtamny — Microsoft Money data export
 
-[![Jar package release](https://github.com/lovette/outtamny/actions/workflows/release.yml/badge.svg)](https://github.com/lovette/outtamny/actions/workflows/release.yml)
-[![Java unit tests](https://github.com/lovette/outtamny/actions/workflows/test.yml/badge.svg)](https://github.com/lovette/outtamny/actions/workflows/test.yml)
+[![Test and release package](https://github.com/lovette/outtamny/actions/workflows/release.yml/badge.svg)](https://github.com/lovette/outtamny/actions/workflows/release.yml)
 
 `outtamny` is a Java command-line utility that reads a Microsoft Money `.mny` file and generates SQL to recreate its tables, indexes, and data in SQLite.
 
@@ -15,13 +14,13 @@
 
 ## Getting Started
 
-The quickest way to get started is to download the [latest release](https://github.com/lovette/outtamny/releases) JAR file from the repo.
+The quickest way to get started is to download the [latest release](https://github.com/lovette/outtamny/releases) JAR file from the repo. Java 25 or later is required.
 
 ```bash
 curl -L -O https://github.com/lovette/outtamny/releases/latest/download/outtamny.jar
 ```
 
-The `outtamny` command `schema` generates all the SQL necessary to recreate table schemas, indexes and data from a Microsoft Money file in SQLite. Creating a SQLite database is as simple as:
+The `schema` command generates all the SQL necessary to recreate table schemas, indexes and data from a Microsoft Money file in SQLite. Creating a SQLite database is as simple as:
 
 ```bash
 java -jar outtamny.jar schema --out - src/test/resources/sunset-sample.mny | sqlite3 sample.db
