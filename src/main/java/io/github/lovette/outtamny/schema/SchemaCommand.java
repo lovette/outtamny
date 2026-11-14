@@ -76,22 +76,6 @@ public class SchemaCommand extends BaseCommand implements Callable<Integer> {
             "--out" }, paramLabel = "DIRECTORY|FILE|-", description = "The name for combined schema file, the directory to write , or '-' for stdout. Defaults to MNYFILE's name and directory.", order = 1)
     private Path outDirOrFilePath;
 
-    @Option(names = { "-p",
-            "--password" }, description = "Prompt for the password for the Money data file.", prompt = "Enter the password for the Money data file: ", interactive = true, order = 2)
-    private String mnyPasswordPrompt;
-
-    @Option(names = {
-            "--password:pw" }, paramLabel = "PASSWORD", description = "The password for the Money data file (may be visible in shell history).", order = 2)
-    private String mnyPasswordInline;
-
-    @Option(names = {
-            "--password:file" }, paramLabel = "FILE", description = "The file containing the password for the Money data file.", order = 2)
-    private Path mnyPasswordFile;
-
-    @Option(names = {
-            "--password:env" }, paramLabel = "ENVVAR", description = "The environment variable containing the password for the Money data file.", order = 2)
-    private String mnyPasswordEnv;
-
     @Option(names = {
             "-s",
             "--schema-out" }, description = "Structure schema output format. Valid values: ${COMPLETION-CANDIDATES}", order = 3)
