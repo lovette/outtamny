@@ -1,7 +1,7 @@
-# Run unit tests and packages a release if all tests pass.
+# Run unit tests and package a release if all tests pass.
 # https://github.com/lovette/outtamny/releases
 
-name: Test and package release
+name: Test and release Java JAR
 
 on:
   # Allow triggering manually from GitHub UI.
@@ -46,6 +46,9 @@ jobs:
       - name: Build JAR
         run: mvn --batch-mode package -DskipTests
 
+      - name: Copy JAR to unversioned filename
+        run: cp target/outtamny-[0-9]*.jar target/outtamny.jar
+
       - name: Generate release notes
         uses: orhun/git-cliff-action@v4
         id: git-cliff
@@ -60,6 +63,7 @@ jobs:
         with:
           body: ${{ steps.git-cliff.outputs.content }}
           files: |
+            target/outtamny.jar
             target/outtamny-[0-9]*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
