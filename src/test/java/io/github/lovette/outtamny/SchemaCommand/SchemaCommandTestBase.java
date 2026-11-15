@@ -10,20 +10,16 @@ import java.util.List;
 
 import org.junit.jupiter.api.io.TempDir;
 
-import io.github.lovette.outtamny.AppTestBase;
+import io.github.lovette.outtamny.CommandTestBase;
 
 /**
  * Base class for schema-related tests that provides common setup and utility
  * methods.
  */
-public class SchemaCommandTestBase extends AppTestBase {
-
+public class SchemaCommandTestBase extends CommandTestBase {
     // A unique, temporary path for every test run
     @TempDir
     protected Path tempOutDir;
-
-    // Path to test MNYFILE. Typically initialzed in a 'BeforeEach' function.
-    protected Path mnyPath;
 
     /**
      * Builds the command-line arguments for the schema command, including the
@@ -34,14 +30,7 @@ public class SchemaCommandTestBase extends AppTestBase {
      * @return the complete array of command-line arguments
      */
     protected String[] buildCommandArgs(Path out, String... args) {
-        if (mnyPath == null) {
-            throw new IllegalStateException("'mnyPath' must be set before calling 'executeSchemaCommand'.");
-        }
-
         List<String> newArgs = new ArrayList<>();
-
-        // Command name goes first
-        newArgs.add("schema");
 
         if (args != null) {
             Collections.addAll(newArgs, args);
@@ -51,10 +40,7 @@ public class SchemaCommandTestBase extends AppTestBase {
             Collections.addAll(newArgs, "--out", out.toString());
         }
 
-        // MNYFILE goes last
-        newArgs.add(mnyPath.toString());
-
-        return newArgs.toArray(String[]::new);
+        return super.buildCommandArgs("schema", newArgs.toArray(String[]::new));
     }
 
     /**
