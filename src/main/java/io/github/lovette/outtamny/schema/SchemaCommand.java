@@ -71,11 +71,11 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
     @Option(names = {
             "-s",
-            "--schema-out" }, description = "Structure schema output format. Valid values: ${COMPLETION-CANDIDATES}", order = 3)
+            "--schema-out" }, paramLabel = "format", description = "Structure schema output format. Valid values: ${COMPLETION-CANDIDATES}", order = 3)
     private OutputScheme schemaOutput = OutputScheme.combined;
 
     @Option(names = { "-d",
-            "--data-out" }, description = "Data output format. Valid values: ${COMPLETION-CANDIDATES}", order = 4)
+            "--data-out" }, paramLabel = "format", description = "Data output format. Valid values: ${COMPLETION-CANDIDATES}", order = 4)
     private OutputScheme dataOutput = OutputScheme.combined;
 
     @Option(names = { "-t",
@@ -83,7 +83,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     private List<String> filterTables;
 
     @Option(names = {
-            "--money-type" }, description = "Data type to store money values as. Valid values: ${COMPLETION-CANDIDATES}", order = 5)
+            "--money-type" }, paramLabel = "type", description = "Data type to store money values as. Valid values: ${COMPLETION-CANDIDATES}", order = 9)
     private MoneyType moneyType = MoneyType.numeric;
 
     @Option(names = { "--skip-empty" }, description = "Skip empty tables.", negatable = true, order = 10)

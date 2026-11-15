@@ -67,15 +67,15 @@ Output SQL that creates Money tables, indexes and data in SQLite.
                                   Money data file.
       --password:env=ENVVAR       The environment variable containing the password
                                   for the Money data file.
-  -s, --schema-out=<schemaOutput> Structure schema output format.
+  -s, --schema-out=format         Structure schema output format.
                                   Valid values: combined, split, table_combined,
                                   table, none
-  -d, --data-out=<dataOutput>     Data output format.
+  -d, --data-out=format           Data output format.
                                   Valid values: combined, split, table_combined,
                                   table, none
   -t, --table=name                Limit output to given table.
                                   Can be specified multiple times.
-      --money-type=<moneyType>    Data type to store money values as.
+      --money-type=type           Data type to store money values as.
                                   Valid values: numeric, text, integer
       --[no-]skip-empty           Skip empty tables.
   -h, --help                      Display this help and exit
