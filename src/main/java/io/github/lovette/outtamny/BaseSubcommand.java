@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import io.github.spannm.jackcess.Column;
 import io.github.spannm.jackcess.DataType;
@@ -135,13 +136,39 @@ public class BaseSubcommand extends BaseCommand {
     /**
      * Returns the list of table names in the Money database, sorted alphabetically.
      *
-     * @param db the Money database instance
+     * @param db           the Money database instance
+     * @param filterTables the list of table names to include, or null to include
+     *                     all tables
      * @return the list of table names in the Money database, sorted alphabetically
      * @throws IOException
      */
-    protected List<String> getMnyTableNames(Database db) throws IOException {
+    protected List<String> getMnyTableNames(Database db, List<String> filterTables) throws IOException {
         List<String> t_names = new ArrayList<>(db.getTableNames());
         Collections.sort(t_names);
+
+        if (filterTables != null && !filterTables.isEmpty()) {
+            // The 'tables' command wraps table names containing spaces with double quotes.
+            filterTables = filterTables.stream()
+                    .map(t -> t.startsWith("\"") && t.endsWith("\"") ? t.substring(1, t.length() - 1) : t)
+                    .collect(Collectors.toList());
+
+            Set<String> t_namesSet = t_names.stream()
+                    .map(String::toLowerCase)
+                    .collect(Collectors.toSet());
+
+            for (String table : filterTables) {
+                if (!t_namesSet.contains(table.toLowerCase())) {
+                    throw new UserFacingException("Error: '" + table + "': No such table.");
+                }
+            }
+
+            Set<String> filterSet = filterTables.stream()
+                    .map(String::toLowerCase)
+                    .collect(Collectors.toSet());
+
+            t_names.removeIf(t_name -> !filterSet.contains(t_name.toLowerCase()));
+        }
+
         return t_names;
     }
 

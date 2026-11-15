@@ -73,6 +73,8 @@ Output SQL that creates Money tables, indexes and data in SQLite.
   -d, --data-out=<dataOutput>     Data output format.
                                   Valid values: combined, split, table_combined,
                                   table, none
+  -t, --table=name                Limit output to given table.
+                                  Can be specified multiple times.
       --money-type=<moneyType>    Data type to store money values as.
                                   Valid values: numeric, text, integer
       --[no-]skip-empty           Skip empty tables.
@@ -107,6 +109,8 @@ Output layouts for schema and data are:
 | `none` | Do not write that output category |
 
 ## Command `tables`
+
+The `tables` command lists Money database table names. You can use these names with the `schema` command's `--table` option to generate SQL for specific tables.
 
 ```bash
 % java -jar outtamny.jar tables --help

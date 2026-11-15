@@ -78,6 +78,10 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             "--data-out" }, description = "Data output format. Valid values: ${COMPLETION-CANDIDATES}", order = 4)
     private OutputScheme dataOutput = OutputScheme.combined;
 
+    @Option(names = { "-t",
+            "--table" }, paramLabel = "name", description = "Limit output to given table. Can be specified multiple times.", order = 5)
+    private List<String> filterTables;
+
     @Option(names = {
             "--money-type" }, description = "Data type to store money values as. Valid values: ${COMPLETION-CANDIDATES}", order = 5)
     private MoneyType moneyType = MoneyType.numeric;
@@ -170,7 +174,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
         }
 
         try (Database db = openMnyFile(mnyPath)) {
-            List<String> t_names = getMnyTableNames(db);
+            List<String> t_names = getMnyTableNames(db, filterTables);
 
             initTableOuts(db, tableOutDirPath, t_names);
 

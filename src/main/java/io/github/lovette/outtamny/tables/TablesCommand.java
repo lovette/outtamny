@@ -34,7 +34,7 @@ public class TablesCommand extends BaseSubcommand implements Callable<Integer> {
         }
 
         try (Database db = openMnyFile(mnyPath)) {
-            for (String t_name : getMnyTableNames(db)) {
+            for (String t_name : getMnyTableNames(db, null)) {
                 stdOut().println(sqlNameQ(t_name));
             }
 
