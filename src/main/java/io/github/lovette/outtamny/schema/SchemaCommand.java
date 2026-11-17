@@ -80,6 +80,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             names = {"-s", "--schema-out"},
             paramLabel = "format",
             description = "Structure schema output format. Valid values: ${COMPLETION-CANDIDATES}",
+            completionCandidates = FormatOutputScheme.class,
             order = 3)
     private OutputScheme schemaOutput = OutputScheme.combined;
 
@@ -87,6 +88,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             names = {"-d", "--data-out"},
             paramLabel = "format",
             description = "Data output format. Valid values: ${COMPLETION-CANDIDATES}",
+            completionCandidates = FormatOutputScheme.class,
             order = 4)
     private OutputScheme dataOutput = OutputScheme.combined;
 
@@ -101,6 +103,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             names = {"--money-type"},
             paramLabel = "type",
             description = "Data type to store money values as. Valid values: ${COMPLETION-CANDIDATES}",
+            completionCandidates = FormatMoneyType.class,
             order = 9)
     private MoneyType moneyType = MoneyType.numeric;
 
@@ -125,6 +128,18 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     static final String INDEXES_SQL = "indexes.sql";
     static final String DATA_SQL = "data.sql";
     static final String OUT_STDOUT = "-";
+
+    static class FormatOutputScheme extends LowercaseEnumCandidates<OutputScheme> {
+        FormatOutputScheme() {
+            super(OutputScheme.class);
+        }
+    }
+
+    static class FormatMoneyType extends LowercaseEnumCandidates<MoneyType> {
+        FormatMoneyType() {
+            super(MoneyType.class);
+        }
+    }
 
     /** Subcommand entry point. */
     @Override

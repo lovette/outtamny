@@ -131,6 +131,8 @@ public class App extends BaseCommand implements Runnable {
         IParameterExceptionHandler defaultParameterHandler = cmd.getParameterExceptionHandler();
         IExecutionExceptionHandler defaultExceptionHandler = cmd.getExecutionExceptionHandler();
 
+        cmd.setCaseInsensitiveEnumValuesAllowed(true);
+
         cmd.setParameterExceptionHandler((ParameterException ex, String[] argsArray) -> {
             if (!(ex instanceof UnmatchedArgumentException)) {
                 return defaultParameterHandler.handleParseException(ex, argsArray);

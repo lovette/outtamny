@@ -2,6 +2,9 @@ package io.github.lovette.outtamny;
 
 import io.github.lovette.outtamny.SharedUtils.Verbosity;
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Locale;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Spec;
 
@@ -13,6 +16,21 @@ public abstract class BaseCommand {
     protected CommandSpec spec;
 
     private Verbosity cachedVerbosity;
+
+    public abstract static class LowercaseEnumCandidates<E extends Enum<E>> implements Iterable<String> {
+        private final Class<E> enumClass;
+
+        protected LowercaseEnumCandidates(Class<E> enumClass) {
+            this.enumClass = enumClass;
+        }
+
+        @Override
+        public Iterator<String> iterator() {
+            return Arrays.stream(enumClass.getEnumConstants())
+                    .map(e -> e.name().toLowerCase(Locale.ROOT))
+                    .iterator();
+        }
+    }
 
     /**
      * Gets the standard output PrintWriter. Use this instead of 'System.out' to respect Picocli's
