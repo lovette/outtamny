@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<profiles version="21">
+    <profile kind="CodeFormatterProfile" name="CustomWorkspaceProfile" version="21">
+        <!-- Wrap annotation arguments: one element per line (48 = wrap all, only when necessary) -->
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_arguments_in_annotation" value="48"/>
+
+        <!-- Keep short array initializers like { "foo", "bar" } on one line -->
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_expressions_in_array_initializer" value="16"/>
+
+        <!-- Increase max line length from 80 to 120 so short lines don't wrap early -->
+        <setting id="org.eclipse.jdt.core.formatter.lineSplit" value="120"/>
+    </profile>
+</profiles>

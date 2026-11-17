@@ -7,6 +7,8 @@
 	"settings": {
 		"java.configuration.updateBuildConfiguration": "automatic",
 		"java.symbols.includeSourceMethodDeclarations": true,
+		"java.format.settings.url": ".vscode/formatter.xml",
+		"java.format.settings.profile": "CustomWorkspaceProfile",
 		"java.test.config": {
 			"vmArgs": [
 				"-Xshare:off",
