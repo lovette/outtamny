@@ -41,5 +41,6 @@
 				},
 			]
 		},
+		"xml.format.maxLineWidth": 120,
 	}
 }
