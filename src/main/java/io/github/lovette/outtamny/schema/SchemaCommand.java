@@ -25,7 +25,6 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -726,8 +725,8 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             }
         }
 
-        Collections.sort(fk_refs);
-        Collections.sort(fk_refs_by);
+        fk_refs.sort(null);
+        fk_refs_by.sort(null);
 
         StringJoiner sj_refs = new StringJoiner(", ");
         for (String ref : fk_refs) {

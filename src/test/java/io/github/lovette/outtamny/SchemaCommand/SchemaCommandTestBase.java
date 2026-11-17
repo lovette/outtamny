@@ -106,7 +106,7 @@ public class SchemaCommandTestBase extends CommandTestBase {
             }
         }
 
-        Collections.sort(dirFilesAndDirs);
+        dirFilesAndDirs.sort(null);
 
         return dirFilesAndDirs;
     }
@@ -143,7 +143,7 @@ public class SchemaCommandTestBase extends CommandTestBase {
             }
         }
 
-        Collections.sort(dirFileNames);
+        dirFileNames.sort(null);
 
         return dirFileNames;
     }
