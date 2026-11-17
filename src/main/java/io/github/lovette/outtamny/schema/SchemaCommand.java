@@ -6,6 +6,7 @@ import static io.github.lovette.outtamny.SharedUtils.joinWithParens;
 
 import io.github.lovette.outtamny.App;
 import io.github.lovette.outtamny.BaseSubcommand;
+import io.github.lovette.outtamny.CommandUsageMixin;
 import io.github.lovette.outtamny.SharedUtils.Verbosity;
 import io.github.lovette.outtamny.UserFacingException;
 import io.github.spannm.jackcess.Column;
@@ -34,6 +35,7 @@ import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
@@ -43,10 +45,7 @@ import picocli.CommandLine.ParentCommand;
  * Create a set of SQL files with table schemas and data of a Microsoft Money data file importable
  * into SQLite.
  */
-@Command(
-        name = "schema",
-        description = "Output SQL that creates Money tables, indexes and data in SQLite.",
-        sortOptions = false)
+@Command(name = "schema", description = "Output SQL that creates Money tables, indexes and data in SQLite.")
 public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
     enum OutputScheme {
@@ -62,6 +61,9 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
         text, // TEXT
         integer // INTEGER ($ * 10,000)
     }
+
+    @Mixin
+    CommandUsageMixin usageMixin;
 
     @ParentCommand
     private App parent; // Parent command reference

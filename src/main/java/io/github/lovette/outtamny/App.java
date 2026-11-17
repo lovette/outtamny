@@ -13,6 +13,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.IExecutionExceptionHandler;
 import picocli.CommandLine.IParameterExceptionHandler;
 import picocli.CommandLine.IVersionProvider;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
@@ -23,12 +24,14 @@ import picocli.CommandLine.UnmatchedArgumentException;
         name = "outtamny",
         versionProvider = App.PropertiesVersionProvider.class,
         description = "Gets your financial data outta a Microsoft Money data file.",
-        sortOptions = false,
         subcommands = {
             SchemaCommand.class,
             TablesCommand.class,
         })
 public class App extends BaseCommand implements Runnable {
+
+    @Mixin
+    CommandUsageMixin usageMixin;
 
     // ScopeType.INHERIT allows option to be specified as both the App and
     // subcommands, e.g. 'outtamny -v schema' or 'outtamny schema -v'.
