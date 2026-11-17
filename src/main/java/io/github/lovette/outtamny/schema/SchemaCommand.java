@@ -753,8 +753,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     @Override
     protected String sqliteDataType(DataType t) {
         switch (t) {
-            case MONEY:
-            case NUMERIC:
+            case MONEY, NUMERIC:
                 if (moneyType == MoneyType.TEXT) return "TEXT";
                 if (moneyType == MoneyType.INTEGER) return "INTEGER";
                 return "NUMERIC";

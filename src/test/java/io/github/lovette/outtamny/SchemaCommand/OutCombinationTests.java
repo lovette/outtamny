@@ -67,8 +67,7 @@ public class OutCombinationTests extends SchemaCommandTestBase {
                             assertThat(outSubDirContents).containsOnly("tables.sql", "data.sql");
 
                             break;
-                        case "table_combined":
-                        case "table":
+                        case "table_combined", "table":
                             {
                                 assertThat(outSubDirContents)
                                         .hasSize(34)
@@ -82,15 +81,13 @@ public class OutCombinationTests extends SchemaCommandTestBase {
                     break;
                 case "split":
                     switch (data) {
-                        case "combined":
-                        case "split":
+                        case "combined", "split":
                             assertThat(outSubDirContents).containsOnly("tables.sql", "indexes.sql", "data.sql");
                             break;
                         case "none":
                             assertThat(outSubDirContents).containsOnly("tables.sql", "indexes.sql");
                             break;
-                        case "table_combined":
-                        case "table":
+                        case "table_combined", "table":
                             assertThat(outSubDirContents)
                                     .hasSize(35)
                                     .contains("tables.sql", "indexes.sql")
@@ -102,14 +99,12 @@ public class OutCombinationTests extends SchemaCommandTestBase {
                     break;
                 case "table_combined":
                     switch (data) {
-                        case "table_combined":
-                        case "none":
+                        case "table_combined", "none":
                             assertThat(outSubDirContents)
                                     .hasSize(83)
                                     .doesNotContain("tables.sql", "indexes.sql", "data.sql");
                             break;
-                        case "combined":
-                        case "split":
+                        case "combined", "split":
                             assertThat(outSubDirContents)
                                     .hasSize(84)
                                     .contains("data.sql")
@@ -131,15 +126,13 @@ public class OutCombinationTests extends SchemaCommandTestBase {
                                     .hasSize(144)
                                     .doesNotContain("tables.sql", "indexes.sql", "data.sql");
                             break;
-                        case "combined":
-                        case "split":
+                        case "combined", "split":
                             assertThat(outSubDirContents)
                                     .hasSize(145)
                                     .contains("data.sql")
                                     .doesNotContain("tables.sql", "indexes.sql");
                             break;
-                        case "table_combined":
-                        case "table":
+                        case "table_combined", "table":
                             assertThat(outSubDirContents)
                                     .hasSize(177)
                                     .doesNotContain("tables.sql", "indexes.sql", "data.sql");
@@ -150,8 +143,7 @@ public class OutCombinationTests extends SchemaCommandTestBase {
                     break;
                 case "none":
                     switch (data) {
-                        case "table_combined":
-                        case "table":
+                        case "table_combined", "table":
                             assertThat(outSubDirContents)
                                     .hasSize(33)
                                     .doesNotContain("tables.sql", "indexes.sql", "data.sql");
