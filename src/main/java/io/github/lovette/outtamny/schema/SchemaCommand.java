@@ -49,17 +49,17 @@ import picocli.CommandLine.ParentCommand;
 public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
     enum OutputScheme {
-        combined, // A single file (or stdout)
-        split, // Individual file each for schema, indexes, data
-        table_combined, // A single file per table
-        table, // Individual file each for schema, indexes, data per table
-        none
+        COMBINED, // A single file (or stdout)
+        SPLIT, // Individual file each for schema, indexes, data
+        TABLE_COMBINED, // A single file per table
+        TABLE, // Individual file each for schema, indexes, data per table
+        NONE
     }
 
     enum MoneyType {
-        numeric, // NUMERIC
-        text, // TEXT
-        integer // INTEGER ($ * 10,000)
+        NUMERIC, // NUMERIC
+        TEXT, // TEXT
+        INTEGER // INTEGER ($ * 10,000)
     }
 
     @Mixin
@@ -82,7 +82,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             description = "Structure schema output format. Valid values: ${COMPLETION-CANDIDATES}",
             completionCandidates = FormatOutputScheme.class,
             order = 3)
-    private OutputScheme schemaOutput = OutputScheme.combined;
+    private OutputScheme schemaOutput = OutputScheme.COMBINED;
 
     @Option(
             names = {"-d", "--data-out"},
@@ -90,7 +90,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             description = "Data output format. Valid values: ${COMPLETION-CANDIDATES}",
             completionCandidates = FormatOutputScheme.class,
             order = 4)
-    private OutputScheme dataOutput = OutputScheme.combined;
+    private OutputScheme dataOutput = OutputScheme.COMBINED;
 
     @Option(
             names = {"-t", "--table"},
@@ -105,7 +105,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             description = "Data type to store money values as. Valid values: ${COMPLETION-CANDIDATES}",
             completionCandidates = FormatMoneyType.class,
             order = 9)
-    private MoneyType moneyType = MoneyType.numeric;
+    private MoneyType moneyType = MoneyType.NUMERIC;
 
     @Option(
             names = {"--skip-empty"},
@@ -153,11 +153,11 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             throw new FileNotFoundException("Error: '" + mnyPath + "': No such file.");
         }
 
-        if (dataOutput == OutputScheme.combined && schemaOutput != OutputScheme.combined) {
-            dataOutput = OutputScheme.split;
+        if (dataOutput == OutputScheme.COMBINED && schemaOutput != OutputScheme.COMBINED) {
+            dataOutput = OutputScheme.SPLIT;
         }
-        if (dataOutput == OutputScheme.table_combined && schemaOutput != OutputScheme.table_combined) {
-            dataOutput = OutputScheme.table;
+        if (dataOutput == OutputScheme.TABLE_COMBINED && schemaOutput != OutputScheme.TABLE_COMBINED) {
+            dataOutput = OutputScheme.TABLE;
         }
 
         Path tableOutDirPath;
@@ -229,9 +229,9 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
      * @return true if the output is a single stream, false otherwise.
      */
     private boolean isSingleStreamOut() {
-        return (dataOutput == OutputScheme.combined
-                || (schemaOutput == OutputScheme.combined && dataOutput == OutputScheme.none)
-                || (schemaOutput == OutputScheme.none && dataOutput == OutputScheme.split));
+        return (dataOutput == OutputScheme.COMBINED
+                || (schemaOutput == OutputScheme.COMBINED && dataOutput == OutputScheme.NONE)
+                || (schemaOutput == OutputScheme.NONE && dataOutput == OutputScheme.SPLIT));
     }
 
     /**
@@ -280,21 +280,21 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             SchemaTableOutWriter indexWriter = null;
             SchemaTableOutWriter dataWriter = null;
 
-            if (schemaOutput != OutputScheme.none) {
+            if (schemaOutput != OutputScheme.NONE) {
                 if (isOutputStdout()) {
                     schemaWriter = getWriterForName.apply(OUT_STDOUT);
                     indexWriter = schemaWriter;
-                } else if (schemaOutput == OutputScheme.combined) {
+                } else if (schemaOutput == OutputScheme.COMBINED) {
                     String combined_file = isSingleStreamOut() ? combinedSchemaPath.toString() : TABLES_SQL;
                     schemaWriter = getWriterForName.apply(combined_file);
                     indexWriter = schemaWriter;
-                } else if (schemaOutput == OutputScheme.split) {
+                } else if (schemaOutput == OutputScheme.SPLIT) {
                     schemaWriter = getWriterForName.apply(TABLES_SQL);
                     indexWriter = getWriterForName.apply(INDEXES_SQL);
-                } else if (schemaOutput == OutputScheme.table_combined) {
+                } else if (schemaOutput == OutputScheme.TABLE_COMBINED) {
                     schemaWriter = getWriterForName.apply(t_name + ".sql");
                     indexWriter = schemaWriter;
-                } else if (schemaOutput == OutputScheme.table) {
+                } else if (schemaOutput == OutputScheme.TABLE) {
                     schemaWriter = getWriterForName.apply(t_name + "_" + TABLES_SQL);
                     indexWriter = getWriterForName.apply(t_name + "_" + INDEXES_SQL);
                 } else {
@@ -303,16 +303,16 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                 }
             }
 
-            if (dataOutput != OutputScheme.none) {
+            if (dataOutput != OutputScheme.NONE) {
                 if (isOutputStdout()) {
                     dataWriter = getWriterForName.apply(OUT_STDOUT);
                 } else if (isSingleStreamOut()) {
                     dataWriter = getWriterForName.apply(combinedSchemaPath.toString());
-                } else if (dataOutput == OutputScheme.split) {
+                } else if (dataOutput == OutputScheme.SPLIT) {
                     dataWriter = getWriterForName.apply(DATA_SQL);
-                } else if (dataOutput == OutputScheme.table_combined) {
+                } else if (dataOutput == OutputScheme.TABLE_COMBINED) {
                     dataWriter = getWriterForName.apply(t_name + ".sql");
-                } else if (dataOutput == OutputScheme.table) {
+                } else if (dataOutput == OutputScheme.TABLE) {
                     dataWriter = getWriterForName.apply(t_name + "_" + DATA_SQL);
                 } else {
                     String err = "Invalid value for option '--data-out': '" + dataOutput + "'";
@@ -780,8 +780,8 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
         switch (t) {
             case MONEY:
             case NUMERIC:
-                if (moneyType == MoneyType.text) return "TEXT";
-                if (moneyType == MoneyType.integer) return "INTEGER";
+                if (moneyType == MoneyType.TEXT) return "TEXT";
+                if (moneyType == MoneyType.INTEGER) return "INTEGER";
                 return "NUMERIC";
             default:
                 return super.sqliteDataType(t);
@@ -796,7 +796,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
      */
     @Override
     protected String sqlValue(Object obj) {
-        if (obj instanceof java.math.BigDecimal bd && moneyType == MoneyType.integer) {
+        if (obj instanceof java.math.BigDecimal bd && moneyType == MoneyType.INTEGER) {
             return bd.setScale(4, RoundingMode.HALF_UP)
                     .movePointRight(4)
                     .toBigInteger()
