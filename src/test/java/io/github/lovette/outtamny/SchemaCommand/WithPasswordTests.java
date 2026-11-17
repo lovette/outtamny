@@ -78,7 +78,7 @@ public class WithPasswordTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema --password:file missing")
-    void testPasswordFileMissing() throws IOException {
+    void testPasswordFileMissing() {
         Path passwordFilePath = tempOutDir.resolve("sunset-sample-pwd.txt");
 
         executeSchemaCommand(1, "-vv", "--password:file", passwordFilePath.toString());

@@ -18,7 +18,7 @@ public class FilterTablesTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema --table")
-    void testTableNoArg() throws IOException {
+    void testTableNoArg() {
         executeSchemaCommand(2, "--table");
         assertThat(stdout()).isEmpty();
         assertThat(stderr()).startsWith("Expected parameter for option '--table' but found");
@@ -26,7 +26,7 @@ public class FilterTablesTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema --table NOSUCHTABLE")
-    void testNoSuchTable() throws IOException {
+    void testNoSuchTable() {
         executeSchemaCommand(1, "--table", "NOSUCHTABLE");
         assertThat(stdout()).isEmpty();
         assertThat(stderr()).startsWith("Error: ").endsWith(": No such table.");

@@ -20,7 +20,7 @@ public class StdOutTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema --verbose --out -")
-    void testStdoutWithVerbose() throws IOException {
+    void testStdoutWithVerbose() {
         executeSchemaCommand(1, OUT_STDOUT, "-vv");
         assertThat(stdout()).isEmpty();
         assertThat(stderr()).isEqualTo("Error: Verbosity level must be quiet when output is to stdout.");

@@ -143,7 +143,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
     /** Subcommand entry point. */
     @Override
-    public Integer call() throws FileNotFoundException, IOException {
+    public Integer call() throws IOException {
         if (mnyPath == null) {
             throw new ParameterException(spec.commandLine(), "Error: MNYFILE path must be specified.");
         }
