@@ -1,9 +1,9 @@
 package io.github.lovette.outtamny.SchemaCommand;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class BasicTests extends SchemaCommandTestBase {
     @Test
@@ -11,8 +11,8 @@ public class BasicTests extends SchemaCommandTestBase {
     public void testNoArgs() {
         executeCommand(2, "schema");
         assertThat(stdout()).isEmpty();
-        assertThat(stderr()).startsWith(
-                "Missing required parameter: 'MNYFILE'")
+        assertThat(stderr())
+                .startsWith("Missing required parameter: 'MNYFILE'")
                 .containsIgnoringNewLines("Usage: outtamny schema");
     }
 
@@ -21,8 +21,8 @@ public class BasicTests extends SchemaCommandTestBase {
     public void testNoMnyFile() {
         executeCommand(2, "schema", "--out", tempOutDir.toString());
         assertThat(stdout()).isEmpty();
-        assertThat(stderr()).startsWith(
-                "Missing required parameter: 'MNYFILE'")
+        assertThat(stderr())
+                .startsWith("Missing required parameter: 'MNYFILE'")
                 .containsIgnoringNewLines("Usage: outtamny schema");
     }
 
@@ -31,7 +31,8 @@ public class BasicTests extends SchemaCommandTestBase {
     public void testHelp() {
         executeCommand("schema", "--help");
         assertThat(stderr()).isEmpty();
-        assertThat(stdout()).startsWith("Usage: outtamny schema")
+        assertThat(stdout())
+                .startsWith("Usage: outtamny schema")
                 .containsIgnoringNewLines("--help")
                 .containsIgnoringNewLines("--password")
                 .containsIgnoringNewLines("--out");

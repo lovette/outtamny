@@ -1,5 +1,7 @@
 package io.github.lovette.outtamny.SchemaCommand;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -13,19 +15,17 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.stream.Stream;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class SqliteTests extends SchemaCommandTestBase {
 
-    private final static Path OUT_STDOUT = Paths.get("-");
-    private final static String SQL_COUNT_TABLES = "SELECT COUNT(*) AS c FROM sqlite_schema WHERE type = 'table' AND name NOT LIKE 'sqlite_%'";
+    private static final Path OUT_STDOUT = Paths.get("-");
+    private static final String SQL_COUNT_TABLES =
+            "SELECT COUNT(*) AS c FROM sqlite_schema WHERE type = 'table' AND name NOT LIKE 'sqlite_%'";
 
     // Create a stream of '--schema-out' and '--data-out' combinations for each
     // 'SchemaCommand.OutputScheme' except for where schema is 'none' (since we
@@ -57,18 +57,17 @@ public class SqliteTests extends SchemaCommandTestBase {
         assertThat(out).isNotEmpty();
 
         Process process = new ProcessBuilder(
-                "sqlite3",
-                "-bail", // abort on error
-                "--",
-                dbFile.toString())
+                        "sqlite3",
+                        "-bail", // abort on error
+                        "--",
+                        dbFile.toString())
                 .redirectErrorStream(true)
                 .directory(tempOutDir.toFile())
                 .start();
 
         // Write the SQL commands to the sqlite3 process's stdin.
-        try (BufferedWriter writer = new BufferedWriter(
-                new OutputStreamWriter(
-                        process.getOutputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedWriter writer =
+                new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8))) {
 
             writer.write(out);
             writer.flush();
@@ -99,7 +98,7 @@ public class SqliteTests extends SchemaCommandTestBase {
     @ParameterizedTest(name = "schema={0}, data={1}")
     @MethodSource("outputCombinations")
     void testOutputCombination(String schema, String data) throws IOException, InterruptedException, SQLException {
-        String[] args = { "-vv", "--schema-out", schema, "--data-out", data };
+        String[] args = {"-vv", "--schema-out", schema, "--data-out", data};
         String sqlFileName = "out.sql"; // override default name
         Path sqlFilePath = tempOutDir.resolve(sqlFileName);
 
@@ -125,8 +124,7 @@ public class SqliteTests extends SchemaCommandTestBase {
     }
 
     /**
-     * Executes the given SQL file using sqlite3 and verifies that it runs
-     * successfully.
+     * Executes the given SQL file using sqlite3 and verifies that it runs successfully.
      *
      * @param sqlFilePath the path to the SQL file to execute
      * @throws IOException
@@ -134,11 +132,11 @@ public class SqliteTests extends SchemaCommandTestBase {
      */
     private void executeSqliteWithFile(Path sqlFilePath) throws IOException, InterruptedException {
         Process process = new ProcessBuilder(
-                "sqlite3",
-                "-bail", // abort on error
-                "--",
-                dbFile.toString(),
-                String.format(".read '%s'", sqlFilePath))
+                        "sqlite3",
+                        "-bail", // abort on error
+                        "--",
+                        dbFile.toString(),
+                        String.format(".read '%s'", sqlFilePath))
                 .redirectErrorStream(true)
                 .directory(sqlFilePath.getParent().toFile())
                 .start();

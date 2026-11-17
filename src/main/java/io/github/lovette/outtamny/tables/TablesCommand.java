@@ -1,14 +1,13 @@
 package io.github.lovette.outtamny.tables;
 
+import io.github.lovette.outtamny.BaseSubcommand;
+import io.github.spannm.jackcess.Database;
+import io.github.spannm.jackcess.encrypt.InvalidCredentialsException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
-
-import io.github.lovette.outtamny.BaseSubcommand;
-import io.github.spannm.jackcess.Database;
-import io.github.spannm.jackcess.encrypt.InvalidCredentialsException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
@@ -19,9 +18,7 @@ public class TablesCommand extends BaseSubcommand implements Callable<Integer> {
     @Parameters(index = "0", paramLabel = "MNYFILE", description = "Money data file (.mny).")
     private Path mnyPath;
 
-    /**
-     * Subcommand entry point.
-     */
+    /** Subcommand entry point. */
     @Override
     public Integer call() throws FileNotFoundException, IOException {
         if (mnyPath == null) {

@@ -1,18 +1,17 @@
 package io.github.lovette.outtamny.SchemaCommand;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class StdOutTests extends SchemaCommandTestBase {
 
-    private final static Path OUT_STDOUT = Paths.get("-");
+    private static final Path OUT_STDOUT = Paths.get("-");
 
     @BeforeEach
     void setMnyPath() {
@@ -35,12 +34,20 @@ public class StdOutTests extends SchemaCommandTestBase {
         String out = stdout();
         assertThat(out).isNotEmpty();
 
-        long beginTransactionCount = out.lines().filter(line -> line.startsWith("BEGIN TRANSACTION;")).count();
-        long commitTransactionCount = out.lines().filter(line -> line.startsWith("COMMIT;")).count();
-        long createTableCount = out.lines().filter(line -> line.startsWith("CREATE TABLE ")).count();
-        long indexCount = out.lines().filter(line -> line.startsWith("CREATE INDEX ")).count();
-        long uniqueIndexCount = out.lines().filter(line -> line.startsWith("CREATE UNIQUE INDEX ")).count();
-        long insertCount = out.lines().filter(line -> line.startsWith("INSERT INTO ")).count();
+        long beginTransactionCount = out.lines()
+                .filter(line -> line.startsWith("BEGIN TRANSACTION;"))
+                .count();
+        long commitTransactionCount =
+                out.lines().filter(line -> line.startsWith("COMMIT;")).count();
+        long createTableCount =
+                out.lines().filter(line -> line.startsWith("CREATE TABLE ")).count();
+        long indexCount =
+                out.lines().filter(line -> line.startsWith("CREATE INDEX ")).count();
+        long uniqueIndexCount = out.lines()
+                .filter(line -> line.startsWith("CREATE UNIQUE INDEX "))
+                .count();
+        long insertCount =
+                out.lines().filter(line -> line.startsWith("INSERT INTO ")).count();
 
         assertThat(beginTransactionCount).isEqualTo(3);
         assertThat(commitTransactionCount).isEqualTo(beginTransactionCount);

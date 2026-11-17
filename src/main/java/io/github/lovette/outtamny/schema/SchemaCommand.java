@@ -1,5 +1,21 @@
 package io.github.lovette.outtamny.schema;
 
+import static io.github.lovette.outtamny.SharedUtils.getPathStem;
+import static io.github.lovette.outtamny.SharedUtils.getPathSuffix;
+import static io.github.lovette.outtamny.SharedUtils.joinWithParens;
+
+import io.github.lovette.outtamny.App;
+import io.github.lovette.outtamny.BaseSubcommand;
+import io.github.lovette.outtamny.SharedUtils.Verbosity;
+import io.github.lovette.outtamny.UserFacingException;
+import io.github.spannm.jackcess.Column;
+import io.github.spannm.jackcess.DataType;
+import io.github.spannm.jackcess.Database;
+import io.github.spannm.jackcess.Index;
+import io.github.spannm.jackcess.Row;
+import io.github.spannm.jackcess.Table;
+import io.github.spannm.jackcess.encrypt.InvalidCredentialsException;
+import io.github.spannm.jackcess.impl.IndexImpl;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -17,23 +33,6 @@ import java.util.Map;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
-
-import static io.github.lovette.outtamny.SharedUtils.getPathStem;
-import static io.github.lovette.outtamny.SharedUtils.getPathSuffix;
-import static io.github.lovette.outtamny.SharedUtils.joinWithParens;
-
-import io.github.lovette.outtamny.App;
-import io.github.lovette.outtamny.BaseSubcommand;
-import io.github.lovette.outtamny.SharedUtils.Verbosity;
-import io.github.lovette.outtamny.UserFacingException;
-import io.github.spannm.jackcess.Column;
-import io.github.spannm.jackcess.DataType;
-import io.github.spannm.jackcess.Database;
-import io.github.spannm.jackcess.Index;
-import io.github.spannm.jackcess.Row;
-import io.github.spannm.jackcess.Table;
-import io.github.spannm.jackcess.encrypt.InvalidCredentialsException;
-import io.github.spannm.jackcess.impl.IndexImpl;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
@@ -41,11 +40,13 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
 /**
- * Create a set of SQL files with table schemas and data of a Microsoft Money
- * data file
- * importable into SQLite.
+ * Create a set of SQL files with table schemas and data of a Microsoft Money data file importable
+ * into SQLite.
  */
-@Command(name = "schema", description = "Output SQL that creates Money tables, indexes and data in SQLite.", sortOptions = false)
+@Command(
+        name = "schema",
+        description = "Output SQL that creates Money tables, indexes and data in SQLite.",
+        sortOptions = false)
 public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
     enum OutputScheme {
@@ -65,36 +66,54 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     @ParentCommand
     private App parent; // Parent command reference
 
-    @Option(names = { "-o",
-            "--out" }, paramLabel = "DIRECTORY|FILE|-", description = "The name for combined schema file, the directory to write , or '-' for stdout. Defaults to MNYFILE's name and directory.", order = 1)
+    @Option(
+            names = {"-o", "--out"},
+            paramLabel = "DIRECTORY|FILE|-",
+            description =
+                    "The name for combined schema file, the directory to write , or '-' for stdout. Defaults to MNYFILE's name and directory.",
+            order = 1)
     private Path outDirOrFilePath;
 
-    @Option(names = {
-            "-s",
-            "--schema-out" }, paramLabel = "format", description = "Structure schema output format. Valid values: ${COMPLETION-CANDIDATES}", order = 3)
+    @Option(
+            names = {"-s", "--schema-out"},
+            paramLabel = "format",
+            description = "Structure schema output format. Valid values: ${COMPLETION-CANDIDATES}",
+            order = 3)
     private OutputScheme schemaOutput = OutputScheme.combined;
 
-    @Option(names = { "-d",
-            "--data-out" }, paramLabel = "format", description = "Data output format. Valid values: ${COMPLETION-CANDIDATES}", order = 4)
+    @Option(
+            names = {"-d", "--data-out"},
+            paramLabel = "format",
+            description = "Data output format. Valid values: ${COMPLETION-CANDIDATES}",
+            order = 4)
     private OutputScheme dataOutput = OutputScheme.combined;
 
-    @Option(names = { "-t",
-            "--table" }, paramLabel = "name", description = "Limit output to given table. Can be specified multiple times.", order = 5)
+    @Option(
+            names = {"-t", "--table"},
+            paramLabel = "name",
+            description = "Limit output to given table. Can be specified multiple times.",
+            order = 5)
     private List<String> filterTables;
 
-    @Option(names = {
-            "--money-type" }, paramLabel = "type", description = "Data type to store money values as. Valid values: ${COMPLETION-CANDIDATES}", order = 9)
+    @Option(
+            names = {"--money-type"},
+            paramLabel = "type",
+            description = "Data type to store money values as. Valid values: ${COMPLETION-CANDIDATES}",
+            order = 9)
     private MoneyType moneyType = MoneyType.numeric;
 
-    @Option(names = { "--skip-empty" }, description = "Skip empty tables.", negatable = true, order = 10)
+    @Option(
+            names = {"--skip-empty"},
+            description = "Skip empty tables.",
+            negatable = true,
+            order = 10)
     private boolean skipEmpty = false;
 
     @Parameters(index = "0", paramLabel = "MNYFILE", description = "Money data file (.mny).")
     private Path mnyPath;
 
     // foreignKeyReferences()
-    public record FKReference(String refs, String refs_by) {
-    }
+    public record FKReference(String refs, String refs_by) {}
 
     Path combinedSchemaPath;
     final Map<String, SchemaTableOut> tableOuts = new LinkedHashMap<>();
@@ -105,14 +124,11 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     static final String DATA_SQL = "data.sql";
     static final String OUT_STDOUT = "-";
 
-    /**
-     * Subcommand entry point.
-     */
+    /** Subcommand entry point. */
     @Override
     public Integer call() throws FileNotFoundException, IOException {
         if (mnyPath == null) {
-            throw new ParameterException(spec.commandLine(),
-                    "Error: MNYFILE path must be specified.");
+            throw new ParameterException(spec.commandLine(), "Error: MNYFILE path must be specified.");
         }
 
         mnyPath = mnyPath.toAbsolutePath().normalize();
@@ -135,7 +151,8 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                 throw new UserFacingException(err);
             }
             if (!isSingleStreamOut()) {
-                String err = "Error: When output is to stdout, '--schema-out' and '--data-out' must each be 'combined' or 'none'.";
+                String err =
+                        "Error: When output is to stdout, '--schema-out' and '--data-out' must each be 'combined' or 'none'.";
                 throw new UserFacingException(err);
             }
 
@@ -189,8 +206,8 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     }
 
     /**
-     * Determines if there is a single output stream, i.e., the output is a single
-     * schema file written to 'combinedSchemaPath' or stdout.
+     * Determines if there is a single output stream, i.e., the output is a single schema file
+     * written to 'combinedSchemaPath' or stdout.
      *
      * @return true if the output is a single stream, false otherwise.
      */
@@ -210,17 +227,15 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     }
 
     /**
-     * Initializes the output details for each table based on the schema and data
-     * output options and the list of table names.
+     * Initializes the output details for each table based on the schema and data output options and
+     * the list of table names.
      *
-     * @param db              The database instance.
-     * @param tableOutDirPath The path to the schema output directory or
-     *                        'OUT_STDOUT'.
-     * @param t_names         The list of table names to process.
+     * @param db The database instance.
+     * @param tableOutDirPath The path to the schema output directory or 'OUT_STDOUT'.
+     * @param t_names The list of table names to process.
      * @throws IOException if an I/O error occurs while reading the Money data file.
      */
-    private void initTableOuts(Database db, Path tableOutDirPath, List<String> t_names)
-            throws IOException {
+    private void initTableOuts(Database db, Path tableOutDirPath, List<String> t_names) throws IOException {
 
         // Each output file has it's own TableOutWriter.
         Function<String, SchemaTableOutWriter> getWriterForName = fileName -> {
@@ -242,7 +257,6 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                     stdOut().println("Skipping empty table: " + t_name);
                 }
                 continue; // Skip empty table
-
             }
 
             SchemaTableOutWriter schemaWriter = null;
@@ -306,8 +320,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
      * @throws IOException if an I/O error occurs while writing the files
      * @throws IOException if an I/O error occurs while reading the Money data file.
      */
-    private void writeSchemaFiles(Database db)
-            throws IOException {
+    private void writeSchemaFiles(Database db) throws IOException {
 
         if (getVerbosityLevel().isAtLeast(Verbosity.DEBUG)) {
             LinkedHashSet<Path> writerPaths = new LinkedHashSet<>();
@@ -320,7 +333,8 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             }
         }
 
-        SchemaTableOutWriter combinedWriter = isSingleStreamOut() ? tableOutWriters.values().iterator().next() : null;
+        SchemaTableOutWriter combinedWriter =
+                isSingleStreamOut() ? tableOutWriters.values().iterator().next() : null;
 
         if (combinedWriter != null) {
             combinedWriter.writeHeader();
@@ -383,8 +397,8 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     }
 
     /**
-     * Writes the combined schema SQL file by including all individual table schema
-     * files in the correct order.
+     * Writes the combined schema SQL file by including all individual table schema files in the
+     * correct order.
      */
     private void writeCombinedSchema() throws IOException {
         SchemaTableOutWriter combinedWriter = new SchemaTableOutWriter(combinedSchemaPath);
@@ -422,7 +436,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     /**
      * Writes the SQL CREATE TABLE statement for the given table and its columns.
      *
-     * @param t    the table to generate the CREATE TABLE statement for
+     * @param t the table to generate the CREATE TABLE statement for
      * @param cols the list of columns to include in the CREATE TABLE statement
      * @return the SQL CREATE TABLE statement as a string
      * @throws IOException if an I/O error occurs while reading the Money data file.
@@ -455,7 +469,9 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             }
 
             for (Index.Column c : ix.getColumns()) {
-                add_ix_map.computeIfAbsent(c.getColumn().getName(), k -> new ArrayList<>()).add(ix);
+                add_ix_map
+                        .computeIfAbsent(c.getColumn().getName(), k -> new ArrayList<>())
+                        .add(ix);
             }
         }
 
@@ -510,8 +526,10 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
             if (uk_ixs != null) {
                 for (Index ix : uk_ixs) {
-                    if (ix.getColumnCount() == 1 && ix.getColumns().get(0).getName().equals(c_name)) {
-                        // Mark column UNIQUE in table def instead of a separate CREATE UNIQUE INDEX.
+                    if (ix.getColumnCount() == 1
+                            && ix.getColumns().get(0).getName().equals(c_name)) {
+                        // Mark column UNIQUE in table def instead of a separate CREATE UNIQUE
+                        // INDEX.
                         sj_col.add("UNIQUE");
                     }
                 }
@@ -538,7 +556,9 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
         if (t_pk_is_composite) {
             // Composite primary keys are defined at the table level, not the column level.
-            String[] pk_cols = t_pk_ix.getColumns().stream().map(c -> sqlNameQ(c.getName())).toArray(String[]::new);
+            String[] pk_cols = t_pk_ix.getColumns().stream()
+                    .map(c -> sqlNameQ(c.getName()))
+                    .toArray(String[]::new);
             sj_table.add("  PRIMARY KEY " + joinWithParens(pk_cols));
         }
 
@@ -550,7 +570,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     /**
      * Writes SQL INSERT INTO statements for the given table and its columns.
      *
-     * @param t    the table to generate the INSERT INTO statement for
+     * @param t the table to generate the INSERT INTO statement for
      * @param cols the list of columns to include in the INSERT INTO statement
      * @return the SQL INSERT INTO statement as a string
      * @throws IOException if an I/O error occurs while reading the Money data file.
@@ -574,7 +594,8 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                 sw.write(",\n");
             }
 
-            String[] values = cols.stream().map(c -> sqlValue(r.get(c.getName()))).toArray(String[]::new);
+            String[] values =
+                    cols.stream().map(c -> sqlValue(r.get(c.getName()))).toArray(String[]::new);
 
             sw.write(joinWithParens(values));
 
@@ -606,7 +627,8 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             }
 
             String ix_name = "idx_" + name + "_" + ix.getName();
-            String[] ix_cols = ix.getColumns().stream().map(c -> sqlNameQ(c.getName())).toArray(String[]::new);
+            String[] ix_cols =
+                    ix.getColumns().stream().map(c -> sqlNameQ(c.getName())).toArray(String[]::new);
             StringJoiner sj_create = new StringJoiner(" ", "", ";\n");
 
             if (ix.isUnique() && ix.getColumnCount() == 1) {
@@ -638,15 +660,14 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     }
 
     /**
-     * Determine from a foreign key index reference whether it is a child table
-     * REFERENCES or parent table REFERENCED BY relationship.
+     * Determine from a foreign key index reference whether it is a child table REFERENCES or parent
+     * table REFERENCED BY relationship.
      *
-     * @param t      the table containing the foreign key indexes
-     * @param c      the column in the table
+     * @param t the table containing the foreign key indexes
+     * @param c the column in the table
      * @param fk_ixs the list of foreign key indexes on the table
-     * @return the foreign key reference clause as an FKReferences object, or null
-     *         if no foreign
-     *         key indexes are provided
+     * @return the foreign key reference clause as an FKReferences object, or null if no foreign key
+     *     indexes are provided
      * @throws IOException if an I/O error occurs while reading the Money data file.
      */
     static FKReference foreignKeyReferences(Table t, Column t_c, List<Index> fk_ixs) throws IOException {
@@ -683,7 +704,9 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                 throw new IllegalStateException("Foreign key indexes not expected to also be primary key");
             }
 
-            String[] fk_cols = parentIndex.getColumns().stream().map(c -> sqlNameQ(c.getName())).toArray(String[]::new);
+            String[] fk_cols = parentIndex.getColumns().stream()
+                    .map(c -> sqlNameQ(c.getName()))
+                    .toArray(String[]::new);
 
             // if (false) {
             // String[] fk_cols_by = childIndex.getColumns().stream().map(c ->
@@ -740,10 +763,8 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
         switch (t) {
             case MONEY:
             case NUMERIC:
-                if (moneyType == MoneyType.text)
-                    return "TEXT";
-                if (moneyType == MoneyType.integer)
-                    return "INTEGER";
+                if (moneyType == MoneyType.text) return "TEXT";
+                if (moneyType == MoneyType.integer) return "INTEGER";
                 return "NUMERIC";
             default:
                 return super.sqliteDataType(t);
@@ -759,7 +780,10 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     @Override
     protected String sqlValue(Object obj) {
         if (obj instanceof java.math.BigDecimal bd && moneyType == MoneyType.integer) {
-            return bd.setScale(4, RoundingMode.HALF_UP).movePointRight(4).toBigInteger().toString();
+            return bd.setScale(4, RoundingMode.HALF_UP)
+                    .movePointRight(4)
+                    .toBigInteger()
+                    .toString();
         }
         return super.sqlValue(obj);
     }

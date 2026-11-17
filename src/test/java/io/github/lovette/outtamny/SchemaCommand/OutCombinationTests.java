@@ -1,19 +1,18 @@
 package io.github.lovette.outtamny.SchemaCommand;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class OutCombinationTests extends SchemaCommandTestBase {
 
@@ -36,7 +35,7 @@ public class OutCombinationTests extends SchemaCommandTestBase {
     @Test
     @DisplayName("schema and data output both set to none")
     void testOutputCombinationNone() {
-        String[] args = { "-vv", "--schema-out", "none", "--data-out", "none" };
+        String[] args = {"-vv", "--schema-out", "none", "--data-out", "none"};
         executeSchemaCommand(1, args);
 
         assertThat(stdout()).isEmpty();
@@ -46,7 +45,7 @@ public class OutCombinationTests extends SchemaCommandTestBase {
     @ParameterizedTest(name = "schema={0}, data={1}")
     @MethodSource("outputCombinations")
     void testOutputCombination(String schema, String data) throws IOException {
-        String[] args = { "-vv", "--schema-out", schema, "--data-out", data };
+        String[] args = {"-vv", "--schema-out", schema, "--data-out", data};
 
         // System.out.println(String.format("schema='%s', data='%s':", schema, data));
 
@@ -56,14 +55,11 @@ public class OutCombinationTests extends SchemaCommandTestBase {
         // outDirContents.forEach(System.out::println);
 
         if (schema.equals("combined") && (data.equals("combined") || data.equals("none"))) {
-            assertThat(outDirContents)
-                    .containsOnly("sunset-sample.sql");
+            assertThat(outDirContents).containsOnly("sunset-sample.sql");
         } else if (schema.equals("none") && (data.equals("combined") || data.equals("split"))) {
-            assertThat(outDirContents)
-                    .containsOnly("sunset-sample.sql");
+            assertThat(outDirContents).containsOnly("sunset-sample.sql");
         } else {
-            assertThat(outDirContents)
-                    .containsOnly("sunset-sample.sql", "sunset-sample/");
+            assertThat(outDirContents).containsOnly("sunset-sample.sql", "sunset-sample/");
 
             List<String> outSubDirContents = listOutDirFiles(Paths.get("sunset-sample/"));
             // outSubDirContents.forEach(System.out::println);
@@ -72,17 +68,17 @@ public class OutCombinationTests extends SchemaCommandTestBase {
                 case "combined":
                     switch (data) {
                         case "split":
-                            assertThat(outSubDirContents)
-                                    .containsOnly("tables.sql", "data.sql");
+                            assertThat(outSubDirContents).containsOnly("tables.sql", "data.sql");
 
                             break;
                         case "table_combined":
-                        case "table": {
-                            assertThat(outSubDirContents)
-                                    .hasSize(34)
-                                    .contains("tables.sql")
-                                    .doesNotContain("indexes.sql", "data.sql");
-                        }
+                        case "table":
+                            {
+                                assertThat(outSubDirContents)
+                                        .hasSize(34)
+                                        .contains("tables.sql")
+                                        .doesNotContain("indexes.sql", "data.sql");
+                            }
                             break;
                         default:
                             fail(String.format("Unexpected combination: schema='%s', data='%s'", schema, data));
@@ -92,12 +88,10 @@ public class OutCombinationTests extends SchemaCommandTestBase {
                     switch (data) {
                         case "combined":
                         case "split":
-                            assertThat(outSubDirContents)
-                                    .containsOnly("tables.sql", "indexes.sql", "data.sql");
+                            assertThat(outSubDirContents).containsOnly("tables.sql", "indexes.sql", "data.sql");
                             break;
                         case "none":
-                            assertThat(outSubDirContents)
-                                    .containsOnly("tables.sql", "indexes.sql");
+                            assertThat(outSubDirContents).containsOnly("tables.sql", "indexes.sql");
                             break;
                         case "table_combined":
                         case "table":

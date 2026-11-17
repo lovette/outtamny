@@ -12,15 +12,14 @@ import java.nio.file.StandardOpenOption;
 import java.util.LinkedHashSet;
 
 /**
- * Handles writing output to a specific file for table schema and data.
- * Ensures that the file is created if it doesn't exist and appends to it if it
- * does.
+ * Handles writing output to a specific file for table schema and data. Ensures that the file is
+ * created if it doesn't exist and appends to it if it does.
  */
 class SchemaTableOutWriter {
-    final private java.util.Set<String> tableNames = new java.util.LinkedHashSet<>();
-    final private java.util.Set<String> contentHints = new java.util.LinkedHashSet<>();
+    private final java.util.Set<String> tableNames = new java.util.LinkedHashSet<>();
+    private final java.util.Set<String> contentHints = new java.util.LinkedHashSet<>();
     private final Path writerPath; // absolute path or "-" for stdout
-    private boolean writerAppend = false;// first writer creates file, subsequent writers append
+    private boolean writerAppend = false; // first writer creates file, subsequent writers append
     private boolean needCommit = false;
     private boolean needFooter = false;
     boolean transactionWritten = false;
@@ -72,7 +71,7 @@ class SchemaTableOutWriter {
      *
      * @param pw the PrintWriter to use for stdout
      */
-    static public void setStdoutWriter(PrintWriter pw) {
+    public static void setStdoutWriter(PrintWriter pw) {
         stdoutWriter = new PrintWriterIgnoreClose(pw);
     }
 
@@ -106,9 +105,8 @@ class SchemaTableOutWriter {
     }
 
     /**
-     * Adds all tables and content hints from the given TableOutWriter to this
-     * writer. Also updates the transactionWritten flag if the given writer has
-     * written a transaction.
+     * Adds all tables and content hints from the given TableOutWriter to this writer. Also updates
+     * the transactionWritten flag if the given writer has written a transaction.
      *
      * @param tow the TableOutWriter to merge into this writer
      */
@@ -132,9 +130,8 @@ class SchemaTableOutWriter {
     }
 
     /**
-     * Returns whether there is at most one content type associated with this
-     * writer. Writer can have a single table but multiple content types (e.g.,
-     * "schema", "index", "data").
+     * Returns whether there is at most one content type associated with this writer. Writer can
+     * have a single table but multiple content types (e.g., "schema", "index", "data").
      *
      * @return true if there is at most one content hint, false otherwise
      */
@@ -143,8 +140,8 @@ class SchemaTableOutWriter {
     }
 
     /**
-     * Returns a Writer for writing to the output file.
-     * The first call creates the file, subsequent calls append to it.
+     * Returns a Writer for writing to the output file. The first call creates the file, subsequent
+     * calls append to it.
      *
      * @return a Writer for the output file
      * @throws IOException if an I/O error occurs while opening the file
@@ -167,8 +164,7 @@ class SchemaTableOutWriter {
     }
 
     /**
-     * Writes the given string to the output file.
-     * If the string is empty, nothing is written.
+     * Writes the given string to the output file. If the string is empty, nothing is written.
      *
      * @param s the string to write to the output file
      * @throws IOException if an I/O error occurs while writing to the file
@@ -182,8 +178,8 @@ class SchemaTableOutWriter {
     }
 
     /**
-     * Writes the contents of the given StringWriter to the output file.
-     * If the StringWriter is empty, nothing is written.
+     * Writes the contents of the given StringWriter to the output file. If the StringWriter is
+     * empty, nothing is written.
      *
      * @param sw the StringWriter containing the data to write
      * @throws IOException if an I/O error occurs while writing to the file
@@ -193,11 +189,11 @@ class SchemaTableOutWriter {
     }
 
     /**
-     * Writes a CREATE TABLE statement for the specified table to the output file.
-     * Open a new transaction if necessary before writing the statement.
+     * Writes a CREATE TABLE statement for the specified table to the output file. Open a new
+     * transaction if necessary before writing the statement.
      *
      * @param to the TableOut object representing the table to write
-     * @param s  the CREATE TABLE statement to write
+     * @param s the CREATE TABLE statement to write
      * @throws IOException if an I/O error occurs while writing to the file
      */
     public void writeCreateTable(SchemaTableOut to, String s) throws IOException {
@@ -209,11 +205,11 @@ class SchemaTableOutWriter {
     }
 
     /**
-     * Writes a CREATE INDEX statement for the specified table to the output file.
-     * Open a new transaction if necessary before writing the statement.
+     * Writes a CREATE INDEX statement for the specified table to the output file. Open a new
+     * transaction if necessary before writing the statement.
      *
      * @param to the TableOut object representing the table to write
-     * @param s  the CREATE INDEX statement to write
+     * @param s the CREATE INDEX statement to write
      * @throws IOException if an I/O error occurs while writing to the file
      */
     public void writeCreateIndex(SchemaTableOut to, String s) throws IOException {
@@ -225,11 +221,11 @@ class SchemaTableOutWriter {
     }
 
     /**
-     * Writes an INSERT INTO statement for the specified table to the output file.
-     * Open a new transaction if necessary before writing the statement.
+     * Writes an INSERT INTO statement for the specified table to the output file. Open a new
+     * transaction if necessary before writing the statement.
      *
      * @param to the TableOut object representing the table to write
-     * @param s  the INSERT INTO statement to write
+     * @param s the INSERT INTO statement to write
      * @throws IOException if an I/O error occurs while writing to the file
      */
     public void writeInsertTable(SchemaTableOut to, String s) throws IOException {
@@ -241,8 +237,8 @@ class SchemaTableOutWriter {
     }
 
     /**
-     * Writes a block of paths to the output file, each prefixed with the ".read"
-     * command. Opens a new transaction if necessary before writing the paths.
+     * Writes a block of paths to the output file, each prefixed with the ".read" command. Opens a
+     * new transaction if necessary before writing the paths.
      *
      * @param relPaths the set of relative paths to include in the block
      * @throws IOException if an I/O error occurs while writing to the file
@@ -250,8 +246,7 @@ class SchemaTableOutWriter {
     public void writePathsBlock(LinkedHashSet<Path> relPaths) throws IOException {
         // Don't include the same paths in multiple blocks
         relPaths.removeAll(writtenBlockPaths);
-        if (relPaths.isEmpty())
-            return;
+        if (relPaths.isEmpty()) return;
 
         writtenBlockPaths.addAll(relPaths);
 
@@ -268,8 +263,7 @@ class SchemaTableOutWriter {
     }
 
     /**
-     * Writes the header section for the output file, including disabling foreign
-     * keys.
+     * Writes the header section for the output file, including disabling foreign keys.
      *
      * @throws IOException if an I/O error occurs while writing to the file
      */
@@ -284,9 +278,8 @@ class SchemaTableOutWriter {
     }
 
     /**
-     * Writes the footer section for the output file, including enabling foreign
-     * keys and performing integrity checks. If a transaction is in progress, it
-     * will be committed first.
+     * Writes the footer section for the output file, including enabling foreign keys and performing
+     * integrity checks. If a transaction is in progress, it will be committed first.
      *
      * @throws IOException if an I/O error occurs while writing to the file
      */
@@ -312,9 +305,8 @@ class SchemaTableOutWriter {
     }
 
     /**
-     * Begins a new transaction for the output file if necessary.
-     * Safe to call multiple times; will only begin a transaction if one is not
-     * already in progress.
+     * Begins a new transaction for the output file if necessary. Safe to call multiple times; will
+     * only begin a transaction if one is not already in progress.
      *
      * @throws IOException if an I/O error occurs while writing to the file
      */

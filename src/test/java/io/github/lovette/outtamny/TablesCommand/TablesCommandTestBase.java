@@ -1,10 +1,8 @@
 package io.github.lovette.outtamny.TablesCommand;
 
-import java.util.Set;
-
-import org.junit.jupiter.api.BeforeEach;
-
 import io.github.lovette.outtamny.CommandTestBase;
+import java.util.Set;
+import org.junit.jupiter.api.BeforeEach;
 
 public class TablesCommandTestBase extends CommandTestBase {
     @BeforeEach
@@ -26,9 +24,8 @@ public class TablesCommandTestBase extends CommandTestBase {
     }
 
     /**
-     * Executes the schema command with the default temporary output directory and
-     * the specified arguments. Asserts that the exit code is zero and 'stderr' is
-     * empty.
+     * Executes the schema command with the default temporary output directory and the specified
+     * arguments. Asserts that the exit code is zero and 'stderr' is empty.
      *
      * @param args additional command arguments
      */
@@ -37,19 +34,18 @@ public class TablesCommandTestBase extends CommandTestBase {
     }
 
     /**
-     * Executes the tables command with the specified expected exit code and
-     * arguments. 'stdout' and 'stderr' are not checked.
+     * Executes the tables command with the specified expected exit code and arguments. 'stdout' and
+     * 'stderr' are not checked.
      *
      * @param expectedExitCode the expected exit code of the command
-     * @param args             additional command arguments
+     * @param args additional command arguments
      */
     protected void executeTablesCommand(int expectedExitCode, String... args) {
         super.executeCommand(expectedExitCode, buildCommandArgs(args));
     }
 
     /**
-     * Builds the command-line arguments for the 'tables' command, including the
-     * MNYFILE path.
+     * Builds the command-line arguments for the 'tables' command, including the MNYFILE path.
      *
      * @param args additional command arguments
      * @return the complete array of command-line arguments

@@ -1,15 +1,12 @@
 package io.github.lovette.outtamny;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
-/**
- * Unit test for App.
- */
+/** Unit test for App. */
 public class AppTest extends AppTestBase {
     @Test
     @DisplayName("outtamny no args")
@@ -24,7 +21,8 @@ public class AppTest extends AppTestBase {
     @DisplayName("outtamny unknown command")
     public void testUnknownSubcommand() {
         executeCommand(2, "foo");
-        assertThat(stderr()).containsIgnoringNewLines("Error: Unknown command 'foo'.")
+        assertThat(stderr())
+                .containsIgnoringNewLines("Error: Unknown command 'foo'.")
                 .containsIgnoringNewLines("Possible commands are: [")
                 .containsIgnoringNewLines("Try 'outtamny --help' for more information.");
     }
@@ -33,7 +31,8 @@ public class AppTest extends AppTestBase {
     @DisplayName("outtamny --help")
     public void testHelp() {
         executeCommand("--help");
-        assertThat(stdout()).startsWith("Usage: outtamny")
+        assertThat(stdout())
+                .startsWith("Usage: outtamny")
                 .containsIgnoringNewLines("--help")
                 .containsIgnoringNewLines("Commands:")
                 .containsIgnoringNewLines("schema");

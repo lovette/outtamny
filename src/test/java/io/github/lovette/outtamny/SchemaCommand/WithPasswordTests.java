@@ -1,17 +1,16 @@
 package io.github.lovette.outtamny.SchemaCommand;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.org.webcompere.systemstubs.SystemStubs.tapSystemOut;
 import static uk.org.webcompere.systemstubs.SystemStubs.withEnvironmentVariable;
 import static uk.org.webcompere.systemstubs.SystemStubs.withTextFromSystemIn;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 public class WithPasswordTests extends SchemaCommandTestBase {
 
@@ -28,8 +27,7 @@ public class WithPasswordTests extends SchemaCommandTestBase {
         executeSchemaCommand("-vv", "--password:pw", mnyPassword);
 
         assertThat(stdout()).isNotEmpty();
-        assertThat(listOutDirContents())
-                .containsOnly("sunset-sample-pwd.sql");
+        assertThat(listOutDirContents()).containsOnly("sunset-sample-pwd.sql");
     }
 
     @Test
@@ -75,8 +73,7 @@ public class WithPasswordTests extends SchemaCommandTestBase {
         executeSchemaCommand("-vv", "--password:file", passwordFilePath.toString());
 
         assertThat(stdout()).isNotEmpty();
-        assertThat(listOutDirContents())
-                .containsOnly("sunset-sample-pwd.txt", "sunset-sample-pwd.sql");
+        assertThat(listOutDirContents()).containsOnly("sunset-sample-pwd.txt", "sunset-sample-pwd.sql");
     }
 
     @Test

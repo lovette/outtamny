@@ -1,19 +1,15 @@
 package io.github.lovette.outtamny;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
 import org.junit.jupiter.api.BeforeEach;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 import picocli.CommandLine;
 
-/**
- * Base class for unit tests that provides common setup and utility methods.
- */
+/** Base class for unit tests that provides common setup and utility methods. */
 public abstract class AppTestBase {
     private StringWriter outWriter;
     private StringWriter errWriter;
@@ -39,8 +35,8 @@ public abstract class AppTestBase {
     }
 
     /**
-     * Executes the command with the specified arguments and asserts that the exit
-     * code is zero and 'stderr' is empty.
+     * Executes the command with the specified arguments and asserts that the exit code is zero and
+     * 'stderr' is empty.
      *
      * @param args the command-line arguments to pass to the command.
      */
@@ -52,11 +48,11 @@ public abstract class AppTestBase {
     }
 
     /**
-     * Executes the command with the specified arguments and asserts that the exit
-     * code matches the expected exit code. 'stdout' and 'stderr' are not checked.
+     * Executes the command with the specified arguments and asserts that the exit code matches the
+     * expected exit code. 'stdout' and 'stderr' are not checked.
      *
      * @param expectedExitCode the expected exit code of the command.
-     * @param args             the command-line arguments to pass to the command.
+     * @param args the command-line arguments to pass to the command.
      */
     protected void executeCommand(int expectedExitCode, String... args) {
         CommandLine cmd = createCommandLine();
@@ -65,8 +61,8 @@ public abstract class AppTestBase {
     }
 
     /**
-     * Returns the standard output captured during the command execution.
-     * Trailing whitespace is stripped from the captured output.
+     * Returns the standard output captured during the command execution. Trailing whitespace is
+     * stripped from the captured output.
      *
      * @return the captured standard output as a string.
      */
@@ -75,8 +71,8 @@ public abstract class AppTestBase {
     }
 
     /**
-     * Returns the standard error output captured during the command execution.
-     * Trailing whitespace is stripped from the captured output.
+     * Returns the standard error output captured during the command execution. Trailing whitespace
+     * is stripped from the captured output.
      *
      * @return the captured standard error output as a string.
      */
@@ -85,8 +81,7 @@ public abstract class AppTestBase {
     }
 
     /**
-     * Returns the path to a test resource file relative to the test resources
-     * directory.
+     * Returns the path to a test resource file relative to the test resources directory.
      *
      * @param relativePath the relative path to the test resource file.
      * @return the Path to the test resource file.

@@ -1,5 +1,6 @@
 package io.github.lovette.outtamny.SchemaCommand;
 
+import io.github.lovette.outtamny.CommandTestBase;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -7,25 +8,19 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.junit.jupiter.api.io.TempDir;
 
-import io.github.lovette.outtamny.CommandTestBase;
-
-/**
- * Base class for schema-related tests that provides common setup and utility
- * methods.
- */
+/** Base class for schema-related tests that provides common setup and utility methods. */
 public class SchemaCommandTestBase extends CommandTestBase {
     // A unique, temporary path for every test run
     @TempDir
     protected Path tempOutDir;
 
     /**
-     * Builds the command-line arguments for the schema command, including the
-     * output directory and the MNYFILE path.
+     * Builds the command-line arguments for the schema command, including the output directory and
+     * the MNYFILE path.
      *
-     * @param out  absolute path to output file or directory or "-" for stdout
+     * @param out absolute path to output file or directory or "-" for stdout
      * @param args additional command arguments
      * @return the complete array of command-line arguments
      */
@@ -44,9 +39,8 @@ public class SchemaCommandTestBase extends CommandTestBase {
     }
 
     /**
-     * Executes the schema command with the default temporary output directory and
-     * the specified arguments. Asserts that the exit code is zero and 'stderr' is
-     * empty.
+     * Executes the schema command with the default temporary output directory and the specified
+     * arguments. Asserts that the exit code is zero and 'stderr' is empty.
      *
      * @param args additional command arguments
      */
@@ -55,11 +49,11 @@ public class SchemaCommandTestBase extends CommandTestBase {
     }
 
     /**
-     * Executes the schema command with the specified output file or directory and
-     * arguments. The MNYFILE argument is automatically appended at the end of the
-     * command. Asserts that the exit code is zero and 'stderr' is empty.
+     * Executes the schema command with the specified output file or directory and arguments. The
+     * MNYFILE argument is automatically appended at the end of the command. Asserts that the exit
+     * code is zero and 'stderr' is empty.
      *
-     * @param out  the output file or directory
+     * @param out the output file or directory
      * @param args additional command arguments
      */
     protected void executeSchemaCommand(Path out, String... args) {
@@ -67,35 +61,33 @@ public class SchemaCommandTestBase extends CommandTestBase {
     }
 
     /**
-     * Executes the schema command with the default temporary output directory and
-     * the specified expected exit code and arguments.
-     * 'stdout' and 'stderr' are not checked.
+     * Executes the schema command with the default temporary output directory and the specified
+     * expected exit code and arguments. 'stdout' and 'stderr' are not checked.
      *
      * @param expectedExitCode the expected exit code of the command
-     * @param args             additional command arguments
+     * @param args additional command arguments
      */
     protected void executeSchemaCommand(int expectedExitCode, String... args) {
         executeSchemaCommand(expectedExitCode, tempOutDir, args);
     }
 
     /**
-     * Executes the schema command with the specified expected exit code, output
-     * file or directory, and arguments. 'stdout' and 'stderr' are not checked.
+     * Executes the schema command with the specified expected exit code, output file or directory,
+     * and arguments. 'stdout' and 'stderr' are not checked.
      *
      * @param expectedExitCode the expected exit code of the command
-     * @param out              the output file or directory
-     * @param args             additional command arguments
+     * @param out the output file or directory
+     * @param args additional command arguments
      */
     protected void executeSchemaCommand(int expectedExitCode, Path out, String... args) {
         super.executeCommand(expectedExitCode, buildCommandArgs(out, args));
     }
 
     /**
-     * Lists the contents of the specified sub-directory within the temporary output
-     * directory. Directories are suffixed with a '/'.
+     * Lists the contents of the specified sub-directory within the temporary output directory.
+     * Directories are suffixed with a '/'.
      *
-     * @param subDir the sub-directory within the temporary output directory, or
-     *               null for the root
+     * @param subDir the sub-directory within the temporary output directory, or null for the root
      * @return a set of file and directory names
      * @throws IOException if an I/O error occurs
      */
@@ -120,8 +112,8 @@ public class SchemaCommandTestBase extends CommandTestBase {
     }
 
     /**
-     * Lists the contents of the root of the temporary output directory.
-     * Directories are suffixed with a '/'.
+     * Lists the contents of the root of the temporary output directory. Directories are suffixed
+     * with a '/'.
      *
      * @return a set of file and directory names
      * @throws IOException if an I/O error occurs
@@ -131,12 +123,11 @@ public class SchemaCommandTestBase extends CommandTestBase {
     }
 
     /**
-     * Lists the output file names in the temporary output directory or specified
-     * sub-directory matching the given glob pattern.
+     * Lists the output file names in the temporary output directory or specified sub-directory
+     * matching the given glob pattern.
      *
-     * @param subDir the sub-directory within the temporary output directory, or
-     *               null for the root
-     * @param glob   the glob pattern to match file names against
+     * @param subDir the sub-directory within the temporary output directory, or null for the root
+     * @param glob the glob pattern to match file names against
      * @return a set of matching file names
      * @throws IOException if an I/O error occurs
      */
@@ -158,8 +149,7 @@ public class SchemaCommandTestBase extends CommandTestBase {
     }
 
     /**
-     * Lists all output file names in the specified sub-directory of the temporary
-     * output directory.
+     * Lists all output file names in the specified sub-directory of the temporary output directory.
      *
      * @param subDir the sub-directory within the temporary output directory
      * @return a set of file names
@@ -170,8 +160,7 @@ public class SchemaCommandTestBase extends CommandTestBase {
     }
 
     /**
-     * Lists output file names in the temporary output directory matching the given
-     * glob pattern.
+     * Lists output file names in the temporary output directory matching the given glob pattern.
      *
      * @param glob the glob pattern to match file names against
      * @return a set of matching file names

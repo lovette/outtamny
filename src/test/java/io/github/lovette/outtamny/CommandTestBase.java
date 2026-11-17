@@ -5,21 +5,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Base class for command-related tests that provides common setup and utility
- * methods.
- */
+/** Base class for command-related tests that provides common setup and utility methods. */
 public class CommandTestBase extends AppTestBase {
     // Path to test MNYFILE. Typically initialzed in a 'BeforeEach' function.
     protected Path mnyPath;
 
     /**
-     * Builds the complete array of command-line arguments for the specified
-     * command, with the command name as the first argument and the MNYFILE
-     * path at the end.
+     * Builds the complete array of command-line arguments for the specified command, with the
+     * command name as the first argument and the MNYFILE path at the end.
      *
      * @param command subcommand name
-     * @param args    additional command arguments
+     * @param args additional command arguments
      * @return the complete array of command-line arguments
      */
     protected String[] buildCommandArgs(String command, String... args) {

@@ -1,12 +1,11 @@
 package io.github.lovette.outtamny;
 
+import io.github.lovette.outtamny.schema.SchemaCommand;
+import io.github.lovette.outtamny.tables.TablesCommand;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
-
-import io.github.lovette.outtamny.schema.SchemaCommand;
-import io.github.lovette.outtamny.tables.TablesCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IExecutionExceptionHandler;
@@ -17,44 +16,75 @@ import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.UnmatchedArgumentException;
 
-@Command(name = "outtamny", version = "0.5.1-SNAPSHOT", description = "Gets your financial data outta a Microsoft Money data file.", sortOptions = false, subcommands = {
-        SchemaCommand.class, TablesCommand.class,
-})
+@Command(
+        name = "outtamny",
+        version = "0.5.1-SNAPSHOT",
+        description = "Gets your financial data outta a Microsoft Money data file.",
+        sortOptions = false,
+        subcommands = {
+            SchemaCommand.class,
+            TablesCommand.class,
+        })
 public class App extends BaseCommand implements Runnable {
 
     // ScopeType.INHERIT allows option to be specified as both the App and
     // subcommands, e.g. 'outtamny -v schema' or 'outtamny schema -v'.
 
-    @Option(names = { "-p",
-            "--password" }, description = "Prompt for the password for the Money data file.", prompt = "Enter the password for the Money data file: ", interactive = true, order = 2, scope = CommandLine.ScopeType.INHERIT)
+    @Option(
+            names = {"-p", "--password"},
+            description = "Prompt for the password for the Money data file.",
+            prompt = "Enter the password for the Money data file: ",
+            interactive = true,
+            order = 2,
+            scope = CommandLine.ScopeType.INHERIT)
     protected String mnyPasswordPrompt;
 
-    @Option(names = {
-            "--password:pw" }, paramLabel = "PASSWORD", description = "The password for the Money data file (may be visible in shell history).", order = 2, scope = CommandLine.ScopeType.INHERIT)
+    @Option(
+            names = {"--password:pw"},
+            paramLabel = "PASSWORD",
+            description = "The password for the Money data file (may be visible in shell history).",
+            order = 2,
+            scope = CommandLine.ScopeType.INHERIT)
     protected String mnyPasswordInline;
 
-    @Option(names = {
-            "--password:file" }, paramLabel = "FILE", description = "The file containing the password for the Money data file.", order = 2, scope = CommandLine.ScopeType.INHERIT)
+    @Option(
+            names = {"--password:file"},
+            paramLabel = "FILE",
+            description = "The file containing the password for the Money data file.",
+            order = 2,
+            scope = CommandLine.ScopeType.INHERIT)
     protected Path mnyPasswordFile;
 
-    @Option(names = {
-            "--password:env" }, paramLabel = "ENVVAR", description = "The environment variable containing the password for the Money data file.", order = 2, scope = CommandLine.ScopeType.INHERIT)
+    @Option(
+            names = {"--password:env"},
+            paramLabel = "ENVVAR",
+            description = "The environment variable containing the password for the Money data file.",
+            order = 2,
+            scope = CommandLine.ScopeType.INHERIT)
     protected String mnyPasswordEnv;
 
-    @Option(names = { "-v",
-            "--verbose" }, description = "Increase verbose level.", scope = CommandLine.ScopeType.INHERIT, order = 15)
+    @Option(
+            names = {"-v", "--verbose"},
+            description = "Increase verbose level.",
+            scope = CommandLine.ScopeType.INHERIT,
+            order = 15)
     private boolean[] verbosity = new boolean[0];
 
-    @Option(names = { "-V",
-            "--version" }, versionHelp = true, description = "Print version information and exit.", order = 20)
+    @Option(
+            names = {"-V", "--version"},
+            versionHelp = true,
+            description = "Print version information and exit.",
+            order = 20)
     boolean versionRequested;
 
-    @Option(names = { "-h", "--help" }, usageHelp = true, description = "Display this help and exit", order = 20)
+    @Option(
+            names = {"-h", "--help"},
+            usageHelp = true,
+            description = "Display this help and exit",
+            order = 20)
     private boolean helpRequested;
 
-    /**
-     * Executes ONLY if the user runs `App` without any subcommand.
-     */
+    /** Executes ONLY if the user runs `App` without any subcommand. */
     @Override
     public void run() {
         stdErr().println("Please specify a subcommand. Use --help for choices.");
