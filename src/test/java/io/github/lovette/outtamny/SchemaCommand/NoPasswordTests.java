@@ -16,7 +16,7 @@ public class NoPasswordTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema quiet")
-    public void testQuiet() throws IOException {
+    void testQuiet() throws IOException {
         executeSchemaCommand();
         assertThat(stdout()).isEmpty();
         assertThat(listOutDirContents()).containsOnly("sunset-sample.sql");
@@ -24,7 +24,7 @@ public class NoPasswordTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema --verbose")
-    public void testVerbose() throws IOException {
+    void testVerbose() throws IOException {
         executeSchemaCommand("-vv");
         assertThat(stdout()).isNotEmpty();
         assertThat(listOutDirContents()).containsOnly("sunset-sample.sql");

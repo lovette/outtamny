@@ -23,7 +23,7 @@ public class WithPasswordTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema --password:pw")
-    public void testPasswordArgument() throws IOException {
+    void testPasswordArgument() throws IOException {
         executeSchemaCommand("-vv", "--password:pw", mnyPassword);
 
         assertThat(stdout()).isNotEmpty();
@@ -32,7 +32,7 @@ public class WithPasswordTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema --password interactive")
-    public void testPasswordInteractive() throws Exception {
+    void testPasswordInteractive() throws Exception {
         // picocli writes everything to its 'setOut' writer *except* interactive
         // prompts, which go to the console directly.
         String consoleOut = tapSystemOut(() -> withTextFromSystemIn(mnyPassword).execute(() -> {
@@ -46,7 +46,7 @@ public class WithPasswordTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema --password:env")
-    public void testPasswordEnvVar() throws Exception {
+    void testPasswordEnvVar() throws Exception {
         withEnvironmentVariable("JUNITMNYPASSWORD", mnyPassword).execute(() -> {
             executeSchemaCommand("-vv", "--password:env", "JUNITMNYPASSWORD");
         });
@@ -57,7 +57,7 @@ public class WithPasswordTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema --password:env missing")
-    public void testPasswordEnvVarMissing() {
+    void testPasswordEnvVarMissing() {
         executeSchemaCommand(1, "-vv", "--password:env", "JUNITMNYPASSWORD");
 
         assertThat(stdout()).isEmpty();
@@ -66,7 +66,7 @@ public class WithPasswordTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema --password:file")
-    public void testPasswordFile() throws IOException {
+    void testPasswordFile() throws IOException {
         Path passwordFilePath = tempOutDir.resolve("sunset-sample-pwd.txt");
         Files.writeString(passwordFilePath, mnyPassword);
 
@@ -78,7 +78,7 @@ public class WithPasswordTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema --password:file missing")
-    public void testPasswordFileMissing() throws IOException {
+    void testPasswordFileMissing() throws IOException {
         Path passwordFilePath = tempOutDir.resolve("sunset-sample-pwd.txt");
 
         executeSchemaCommand(1, "-vv", "--password:file", passwordFilePath.toString());
@@ -89,7 +89,7 @@ public class WithPasswordTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema wrong password")
-    public void testWrongPassword() throws IOException {
+    void testWrongPassword() throws IOException {
         Path passwordFilePath = tempOutDir.resolve("sunset-sample-pwd.txt");
         Files.writeString(passwordFilePath, "foo");
 

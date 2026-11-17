@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 public class BasicTests extends SchemaCommandTestBase {
     @Test
     @DisplayName("schema no args")
-    public void testNoArgs() {
+    void testNoArgs() {
         executeCommand(2, "schema");
         assertThat(stdout()).isEmpty();
         assertThat(stderr())
@@ -18,7 +18,7 @@ public class BasicTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema no MNYFILE")
-    public void testNoMnyFile() {
+    void testNoMnyFile() {
         executeCommand(2, "schema", "--out", tempOutDir.toString());
         assertThat(stdout()).isEmpty();
         assertThat(stderr())
@@ -28,7 +28,7 @@ public class BasicTests extends SchemaCommandTestBase {
 
     @Test
     @DisplayName("schema --help")
-    public void testHelp() {
+    void testHelp() {
         executeCommand("schema", "--help");
         assertThat(stderr()).isEmpty();
         assertThat(stdout())

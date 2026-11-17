@@ -10,7 +10,7 @@ import picocli.CommandLine;
 public class AppTest extends AppTestBase {
     @Test
     @DisplayName("outtamny no args")
-    public void testNoArgs() {
+    void testNoArgs() {
         CommandLine cmd = createCommandLine();
         assertThat(cmd.execute()).isZero();
         assertThat(stdout()).isEmpty();
@@ -19,7 +19,7 @@ public class AppTest extends AppTestBase {
 
     @Test
     @DisplayName("outtamny unknown command")
-    public void testUnknownSubcommand() {
+    void testUnknownSubcommand() {
         executeCommand(2, "foo");
         assertThat(stderr())
                 .containsIgnoringNewLines("Error: Unknown command 'foo'.")
@@ -29,7 +29,7 @@ public class AppTest extends AppTestBase {
 
     @Test
     @DisplayName("outtamny --help")
-    public void testHelp() {
+    void testHelp() {
         executeCommand("--help");
         assertThat(stdout())
                 .startsWith("Usage: outtamny")
@@ -40,7 +40,7 @@ public class AppTest extends AppTestBase {
 
     @Test
     @DisplayName("outtamny --version")
-    public void testVersion() {
+    void testVersion() {
         executeCommand("--version");
         assertThat(stdout()).hasLineCount(1).hasSizeBetween("0.0.0".length(), "0.0.0-SNAPSHOT".length());
     }
