@@ -73,6 +73,13 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <!-- Necessary for 'PropertiesVersionProvider' to read 'version.properties' -->
+        <filtering>true</filtering>
+        <directory>src/main/resources</directory>
+      </resource>
+    </resources>
     <pluginManagement>
       <plugins>
         <plugin>
@@ -90,6 +97,9 @@
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
           <version>3.5.0</version>
+          <configuration>
+            <propertiesEncoding>UTF-8</propertiesEncoding>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>

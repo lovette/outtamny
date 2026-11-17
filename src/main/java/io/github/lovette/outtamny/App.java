@@ -3,13 +3,16 @@ package io.github.lovette.outtamny;
 import io.github.lovette.outtamny.schema.SchemaCommand;
 import io.github.lovette.outtamny.tables.TablesCommand;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
+import java.util.Properties;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IExecutionExceptionHandler;
 import picocli.CommandLine.IParameterExceptionHandler;
+import picocli.CommandLine.IVersionProvider;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
@@ -18,7 +21,7 @@ import picocli.CommandLine.UnmatchedArgumentException;
 
 @Command(
         name = "outtamny",
-        version = "0.5.1-SNAPSHOT",
+        versionProvider = App.PropertiesVersionProvider.class,
         description = "Gets your financial data outta a Microsoft Money data file.",
         sortOptions = false,
         subcommands = {
@@ -83,6 +86,22 @@ public class App extends BaseCommand implements Runnable {
             description = "Display this help and exit",
             order = 20)
     private boolean helpRequested;
+
+    /**
+     * Reads the version information from file 'src/main/resources/version.properties'.
+     */
+    static class PropertiesVersionProvider implements IVersionProvider {
+        @Override
+        public String[] getVersion() throws Exception {
+            Properties props = new Properties();
+            try (InputStream is = getClass().getResourceAsStream("/version.properties")) {
+                if (is != null) {
+                    props.load(is);
+                }
+            }
+            return new String[] {props.getProperty("version", "unknown")};
+        }
+    }
 
     /** Executes ONLY if the user runs `App` without any subcommand. */
     @Override
