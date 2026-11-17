@@ -6,6 +6,7 @@
 	],
 	"settings": {
 		"java.configuration.updateBuildConfiguration": "automatic",
+		"java.symbols.includeSourceMethodDeclarations": true,
 		"java.test.config": {
 			"vmArgs": [
 				"-Xshare:off",
