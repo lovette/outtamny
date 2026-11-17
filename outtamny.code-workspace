@@ -34,7 +34,7 @@
 		"emeraldwalk.runonsave": {
 			"commands": [
 				{
-					"match": "\\.java$",
+					"match": "\\.java$|pom\\.xml$",
 					"cmd": "mvn --batch-mode --quiet spotless:apply -DspotlessFiles=.*${relativeFile}",
 					"message": "Applying Spotless format to ${fileBasename}",
 					"showElapsed": true,
