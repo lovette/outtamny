@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 public class BasicTests extends TablesCommandTestBase {
     @Test
     @DisplayName("tables no args")
-    public void testNoArgs() {
+    void testNoArgs() {
         executeCommand(2, "tables");
         assertThat(stdout()).isEmpty();
         assertThat(stderr())
@@ -18,7 +18,7 @@ public class BasicTests extends TablesCommandTestBase {
 
     @Test
     @DisplayName("tables --help")
-    public void testHelp() {
+    void testHelp() {
         executeCommand("tables", "--help");
         assertThat(stderr()).isEmpty();
         assertThat(stdout())
