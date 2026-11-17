@@ -178,7 +178,7 @@ public class BaseSubcommand extends BaseCommand {
     protected String sqlValue(Object obj) {
         return switch (obj) {
             case null -> "NULL";
-            case Boolean b -> b ? "1" : "0";
+            case Boolean b -> Boolean.TRUE.equals(b) ? "1" : "0";
             case Byte _, Short _, Integer _, Long _, java.math.BigInteger _ -> obj.toString();
             case Float f -> (Float.isNaN(f) || Float.isInfinite(f)) ? "NULL" : f.toString();
             case Double d -> (Double.isNaN(d) || Double.isInfinite(d)) ? "NULL" : d.toString();

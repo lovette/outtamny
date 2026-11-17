@@ -40,7 +40,7 @@ public class TablesCommand extends BaseSubcommand implements Callable<Integer> {
                 stdOut().println(sqlNameQ(t_name));
             }
 
-        } catch (InvalidCredentialsException e) {
+        } catch (InvalidCredentialsException _) {
             stdErr().println("Error: Invalid password for the Money data file.");
             return 1;
         }

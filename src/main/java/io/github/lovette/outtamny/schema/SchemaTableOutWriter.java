@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Handles writing output to a specific file for table schema and data. Ensures that the file is
@@ -24,8 +25,8 @@ class SchemaTableOutWriter {
     private boolean needFooter = false;
     boolean transactionWritten = false;
     private boolean nestedTransactionWritten = false; // track nested writers
-    private boolean isStdout;
-    private LinkedHashSet<Path> writtenBlockPaths = new LinkedHashSet<>();
+    private final boolean isStdout;
+    private final LinkedHashSet<Path> writtenBlockPaths = new LinkedHashSet<>();
 
     // Wrap 'PrintWriter' to prevent "try-with-resources" from closing the output
     // stream.
@@ -241,7 +242,7 @@ class SchemaTableOutWriter {
      * @param relPaths the set of relative paths to include in the block
      * @throws IOException if an I/O error occurs while writing to the file
      */
-    public void writePathsBlock(LinkedHashSet<Path> relPaths) throws IOException {
+    public void writePathsBlock(Set<Path> relPaths) throws IOException {
         // Don't include the same paths in multiple blocks
         relPaths.removeAll(writtenBlockPaths);
         if (relPaths.isEmpty()) return;

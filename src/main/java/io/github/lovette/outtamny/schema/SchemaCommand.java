@@ -4,7 +4,6 @@ import static io.github.lovette.outtamny.SharedUtils.getPathStem;
 import static io.github.lovette.outtamny.SharedUtils.getPathSuffix;
 import static io.github.lovette.outtamny.SharedUtils.joinWithParens;
 
-import io.github.lovette.outtamny.App;
 import io.github.lovette.outtamny.BaseSubcommand;
 import io.github.lovette.outtamny.CommandUsageMixin;
 import io.github.lovette.outtamny.SharedUtils.Verbosity;
@@ -30,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -38,7 +38,6 @@ import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
-import picocli.CommandLine.ParentCommand;
 
 /**
  * Create a set of SQL files with table schemas and data of a Microsoft Money data file importable
@@ -63,9 +62,6 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
     @Mixin
     CommandUsageMixin usageMixin;
-
-    @ParentCommand
-    private App parent; // Parent command reference
 
     @Option(
             names = {"-o", "--out"},
@@ -207,13 +203,13 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
         }
 
         try (Database db = openMnyFile(mnyPath)) {
-            List<String> t_names = getMnyTableNames(db, filterTables);
+            List<String> tableNames = getMnyTableNames(db, filterTables);
 
-            initTableOuts(db, tableOutDirPath, t_names);
+            initTableOuts(db, tableOutDirPath, tableNames);
 
-            writeSchemaFiles(db);
+            writeSchemaFiles();
 
-        } catch (InvalidCredentialsException e) {
+        } catch (InvalidCredentialsException _) {
             stdErr().println("Error: Invalid password for the Money data file.");
             return 1;
         }
@@ -248,14 +244,15 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
      *
      * @param db The database instance.
      * @param tableOutDirPath The path to the schema output directory or 'OUT_STDOUT'.
-     * @param t_names The list of table names to process.
+     * @param tableNames The list of table names to process.
      * @throws IOException if an I/O error occurs while reading the Money data file.
      */
-    private void initTableOuts(Database db, Path tableOutDirPath, List<String> t_names) throws IOException {
+    private void initTableOuts(Database db, Path tableOutDirPath, List<String> tableNames) throws IOException {
 
         // Each output file has it's own TableOutWriter.
         Function<String, SchemaTableOutWriter> getWriterForName = fileName -> {
-            Path writerPath = (fileName != OUT_STDOUT) ? tableOutDirPath.resolve(fileName) : Path.of(OUT_STDOUT);
+            Path writerPath =
+                    (Objects.equals(fileName, OUT_STDOUT)) ? Path.of(OUT_STDOUT) : tableOutDirPath.resolve(fileName);
             if (!tableOutWriters.containsKey(writerPath)) {
                 tableOutWriters.put(writerPath, new SchemaTableOutWriter(writerPath));
             }
@@ -265,12 +262,12 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
         // Set the stdout writer for all SchemaTableOutWriter objects.
         SchemaTableOutWriter.setStdoutWriter(stdOut());
 
-        for (String t_name : t_names) {
-            Table t = db.getTable(t_name);
+        for (String tableName : tableNames) {
+            Table t = db.getTable(tableName);
 
             if (t.getRowCount() == 0 && skipEmpty) {
                 if (getVerbosityLevel().isAtLeast(Verbosity.INFO)) {
-                    stdOut().println("Skipping empty table: " + t_name);
+                    stdOut().println("Skipping empty table: " + tableName);
                 }
                 continue; // Skip empty table
             }
@@ -284,18 +281,18 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                     schemaWriter = getWriterForName.apply(OUT_STDOUT);
                     indexWriter = schemaWriter;
                 } else if (schemaOutput == OutputScheme.COMBINED) {
-                    String combined_file = isSingleStreamOut() ? combinedSchemaPath.toString() : TABLES_SQL;
-                    schemaWriter = getWriterForName.apply(combined_file);
+                    String combinedFileName = isSingleStreamOut() ? combinedSchemaPath.toString() : TABLES_SQL;
+                    schemaWriter = getWriterForName.apply(combinedFileName);
                     indexWriter = schemaWriter;
                 } else if (schemaOutput == OutputScheme.SPLIT) {
                     schemaWriter = getWriterForName.apply(TABLES_SQL);
                     indexWriter = getWriterForName.apply(INDEXES_SQL);
                 } else if (schemaOutput == OutputScheme.TABLE_COMBINED) {
-                    schemaWriter = getWriterForName.apply(t_name + ".sql");
+                    schemaWriter = getWriterForName.apply(tableName + ".sql");
                     indexWriter = schemaWriter;
                 } else if (schemaOutput == OutputScheme.TABLE) {
-                    schemaWriter = getWriterForName.apply(t_name + "_" + TABLES_SQL);
-                    indexWriter = getWriterForName.apply(t_name + "_" + INDEXES_SQL);
+                    schemaWriter = getWriterForName.apply(tableName + "_" + TABLES_SQL);
+                    indexWriter = getWriterForName.apply(tableName + "_" + INDEXES_SQL);
                 } else {
                     String err = "Invalid value for option '--schema-out': '" + schemaOutput + "'";
                     throw new ParameterException(spec.commandLine(), err);
@@ -310,9 +307,9 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                 } else if (dataOutput == OutputScheme.SPLIT) {
                     dataWriter = getWriterForName.apply(DATA_SQL);
                 } else if (dataOutput == OutputScheme.TABLE_COMBINED) {
-                    dataWriter = getWriterForName.apply(t_name + ".sql");
+                    dataWriter = getWriterForName.apply(tableName + ".sql");
                 } else if (dataOutput == OutputScheme.TABLE) {
-                    dataWriter = getWriterForName.apply(t_name + "_" + DATA_SQL);
+                    dataWriter = getWriterForName.apply(tableName + "_" + DATA_SQL);
                 } else {
                     String err = "Invalid value for option '--data-out': '" + dataOutput + "'";
                     throw new ParameterException(spec.commandLine(), err);
@@ -325,18 +322,17 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
             SchemaTableOut to = new SchemaTableOut(t, schemaWriter, indexWriter, dataWriter);
 
-            tableOuts.put(t_name, to);
+            tableOuts.put(tableName, to);
         }
     }
 
     /**
      * Writes the schema of the given database to files.
      *
-     * @param db the database to dump the schema from
      * @throws IOException if an I/O error occurs while writing the files
      * @throws IOException if an I/O error occurs while reading the Money data file.
      */
-    private void writeSchemaFiles(Database db) throws IOException {
+    private void writeSchemaFiles() throws IOException {
 
         if (getVerbosityLevel().isAtLeast(Verbosity.DEBUG)) {
             LinkedHashSet<Path> writerPaths = new LinkedHashSet<>();
@@ -374,13 +370,13 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                 break; // Not writing data
             }
 
-            int n_rows = to.table.getRowCount();
+            int nRows = to.table.getRowCount();
 
             if (getVerbosityLevel().isAtLeast(Verbosity.INFO)) {
-                stdOut().println(String.format("%-35s rows=%d", to.table.getName(), n_rows));
+                stdOut().printf("%-35s rows=%d%n", to.table.getName(), nRows);
             }
 
-            if (n_rows == 0) {
+            if (nRows == 0) {
                 continue;
             }
 
@@ -461,10 +457,10 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
         StringWriter sw = new StringWriter();
 
-        Map<String, List<Index>> pk_ix_map = new HashMap<>(); // col -> list of primary key indexes
-        Map<String, List<Index>> uk_ix_map = new HashMap<>(); // col -> list of unique key indexes
-        Map<String, List<Index>> fk_ix_map = new HashMap<>(); // col -> list of foreign key indexes
-        Map<String, List<Index>> other_ix_map = new HashMap<>(); // col -> list of other indexes
+        Map<String, List<Index>> pkIxMap = new HashMap<>(); // col -> list of primary key indexes
+        Map<String, List<Index>> ukIxMap = new HashMap<>(); // col -> list of unique key indexes
+        Map<String, List<Index>> fkIxMap = new HashMap<>(); // col -> list of foreign key indexes
+        Map<String, List<Index>> otherIxMap = new HashMap<>(); // col -> list of other indexes
 
         for (Index ix : t.getIndexes()) {
             if (ix.isForeignKey() && ix.isPrimaryKey()) {
@@ -474,51 +470,48 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                 throw new IllegalStateException("Expected primary key index to also be unique.");
             }
 
-            Map<String, List<Index>> add_ix_map = other_ix_map;
+            Map<String, List<Index>> addIxMap = otherIxMap;
 
             if (ix.isForeignKey()) {
-                add_ix_map = fk_ix_map;
+                addIxMap = fkIxMap;
             } else if (ix.isPrimaryKey()) {
-                add_ix_map = pk_ix_map;
+                addIxMap = pkIxMap;
             } else if (ix.isUnique()) {
-                add_ix_map = uk_ix_map;
+                addIxMap = ukIxMap;
             }
 
             for (Index.Column c : ix.getColumns()) {
-                add_ix_map
-                        .computeIfAbsent(c.getColumn().getName(), k -> new ArrayList<>())
+                addIxMap.computeIfAbsent(c.getColumn().getName(), k -> new ArrayList<>())
                         .add(ix);
             }
         }
 
         String name = t.getName();
-        Index t_pk_ix = t.getPrimaryKeyIndex();
-        boolean t_pk_is_composite = (t_pk_ix.getColumnCount() > 1);
-        StringJoiner sj_table = new StringJoiner(",\n", "", ");\n");
+        Index tablePkIx = t.getPrimaryKeyIndex();
+        boolean tablePkIsComposite = (tablePkIx.getColumnCount() > 1);
+        StringJoiner sjTable = new StringJoiner(",\n", "", ");\n");
 
         sw.write("CREATE TABLE " + sqlNameQ(name) + " (\n");
 
         for (int i = 0; i < cols.size(); i++) {
             Column c = cols.get(i);
-            String c_name = c.getName();
-            List<Index> fk_ixs = fk_ix_map.get(c_name);
-            List<Index> pk_ixs = pk_ix_map.get(c_name);
-            List<Index> uk_ixs = uk_ix_map.get(c_name);
-            StringJoiner sj_col = new StringJoiner(" ");
+            String colName = c.getName();
+            List<Index> fkIxs = fkIxMap.get(colName);
+            List<Index> pkIxs = pkIxMap.get(colName);
+            List<Index> ukIxs = ukIxMap.get(colName);
+            StringJoiner sjCol = new StringJoiner(" ");
+            Boolean colNullable = null;
+            FKReference fkRef = foreignKeyReferences(t, fkIxs);
+            String fkRefs = fkRef.refs();
+            String fkRefsBy = fkRef.refs_by();
 
-            Boolean c_nullable = null;
+            sjCol.add(" ");
+            sjCol.add(sqlNameQ(colName));
+            sjCol.add(sqliteDataType(c.getType()));
 
-            FKReference fk_ref = foreignKeyReferences(t, c, fk_ixs);
-            String fk_refs = fk_ref.refs();
-            String fk_refs_by = fk_ref.refs_by();
-
-            sj_col.add(" ");
-            sj_col.add(sqlNameQ(c_name));
-            sj_col.add(sqliteDataType(c.getType()));
-
-            if (pk_ixs != null) {
-                if (pk_ixs.size() > 1) {
-                    throw new IllegalStateException("Column " + c_name + " has more than one primary key index.");
+            if (pkIxs != null) {
+                if (pkIxs.size() > 1) {
+                    throw new IllegalStateException("Column " + colName + " has more than one primary key index.");
                 }
 
                 // In SQLite, a foreign key must reference a column in the parent table that is
@@ -528,51 +521,51 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                 // to be:
                 // PMT(htrnInvoice) > TRN_INVOICE(htrn) > TRN(htrn)
 
-                if (!t_pk_is_composite) {
-                    sj_col.add("PRIMARY KEY");
+                if (!tablePkIsComposite) {
+                    sjCol.add("PRIMARY KEY");
                 }
-                c_nullable = false; // explicitly mark primary key columns as not nullable
+                colNullable = false; // explicitly mark primary key columns as not nullable
             }
 
-            if (uk_ixs != null) {
-                for (Index ix : uk_ixs) {
+            if (ukIxs != null) {
+                for (Index ix : ukIxs) {
                     if (ix.getColumnCount() == 1
-                            && ix.getColumns().get(0).getName().equals(c_name)) {
+                            && ix.getColumns().get(0).getName().equals(colName)) {
                         // Mark column UNIQUE in table def instead of a separate CREATE UNIQUE
                         // INDEX.
-                        sj_col.add("UNIQUE");
+                        sjCol.add("UNIQUE");
                     }
                 }
             }
 
-            if (c_nullable == null) {
+            if (colNullable == null) {
                 // Guess based on data we see...
-                c_nullable = columnHasNulls(t, c);
+                colNullable = columnHasNulls(t, c);
             }
-            if (!c_nullable) {
-                sj_col.add("NOT NULL");
-            }
-
-            if (fk_refs != null) {
-                sj_col.add("REFERENCES " + fk_refs);
+            if (Boolean.FALSE.equals(colNullable)) {
+                sjCol.add("NOT NULL");
             }
 
-            if (fk_refs_by != null) {
-                sj_col.add("/* REFERENCED BY " + fk_refs_by + " */");
+            if (fkRefs != null) {
+                sjCol.add("REFERENCES " + fkRefs);
             }
 
-            sj_table.add(sj_col.toString());
+            if (fkRefsBy != null) {
+                sjCol.add("/* REFERENCED BY " + fkRefsBy + " */");
+            }
+
+            sjTable.add(sjCol.toString());
         }
 
-        if (t_pk_is_composite) {
+        if (tablePkIsComposite) {
             // Composite primary keys are defined at the table level, not the column level.
-            String[] pk_cols = t_pk_ix.getColumns().stream()
+            String[] pkCols = tablePkIx.getColumns().stream()
                     .map(c -> sqlNameQ(c.getName()))
                     .toArray(String[]::new);
-            sj_table.add("  PRIMARY KEY " + joinWithParens(pk_cols));
+            sjTable.add("  PRIMARY KEY " + joinWithParens(pkCols));
         }
 
-        sw.write(sj_table.toString());
+        sw.write(sjTable.toString());
 
         return sw.toString();
     }
@@ -589,13 +582,13 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
         StringWriter sw = new StringWriter();
 
-        int n_row = 0;
+        int nRow = 0;
         final int batch_size = 500;
         String name = t.getName();
 
         for (Row r : t) {
-            if (n_row % batch_size == 0) {
-                if (n_row > 0) {
+            if (nRow % batch_size == 0) {
+                if (nRow > 0) {
                     sw.write(";\n");
                 }
 
@@ -609,10 +602,10 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
             sw.write(joinWithParens(values));
 
-            n_row++;
+            nRow++;
         }
 
-        if (n_row > 0) {
+        if (nRow > 0) {
             sw.write(";\n");
         }
 
@@ -636,30 +629,30 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                 continue;
             }
 
-            String ix_name = "idx_" + name + "_" + ix.getName();
-            String[] ix_cols =
+            String ixName = "idx_" + name + "_" + ix.getName();
+            String[] ixCols =
                     ix.getColumns().stream().map(c -> sqlNameQ(c.getName())).toArray(String[]::new);
-            StringJoiner sj_create = new StringJoiner(" ", "", ";\n");
+            StringJoiner sjCreate = new StringJoiner(" ", "", ";\n");
 
             if (ix.isUnique() && ix.getColumnCount() == 1) {
                 // We used an inline constraint in the CREATE TABLE statement.
                 continue;
             }
 
-            sj_create.add("CREATE");
+            sjCreate.add("CREATE");
             if (ix.isUnique()) {
-                sj_create.add("UNIQUE");
+                sjCreate.add("UNIQUE");
             }
-            sj_create.add("INDEX");
-            sj_create.add(sqlNameU(ix_name));
-            sj_create.add("ON");
-            sj_create.add(sqlNameQ(name));
-            sj_create.add(joinWithParens(ix_cols));
+            sjCreate.add("INDEX");
+            sjCreate.add(sqlNameU(ixName));
+            sjCreate.add("ON");
+            sjCreate.add(sqlNameQ(name));
+            sjCreate.add(joinWithParens(ixCols));
 
-            indexes.add(sj_create.toString());
+            indexes.add(sjCreate.toString());
         }
 
-        Collections.sort(indexes); // For asthetics.
+        indexes.sort(null); // For asthetics.
 
         StringWriter sw = new StringWriter();
         for (String ix : indexes) {
@@ -674,22 +667,21 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
      * table REFERENCED BY relationship.
      *
      * @param t the table containing the foreign key indexes
-     * @param c the column in the table
-     * @param fk_ixs the list of foreign key indexes on the table
+     * @param fkIxs the list of foreign key indexes on the table
      * @return the foreign key reference clause as an FKReferences object, or null if no foreign key
      *     indexes are provided
      * @throws IOException if an I/O error occurs while reading the Money data file.
      */
-    static FKReference foreignKeyReferences(Table t, Column t_c, List<Index> fk_ixs) throws IOException {
+    static FKReference foreignKeyReferences(Table t, List<Index> fkIxs) throws IOException {
 
-        if (fk_ixs == null) {
+        if (fkIxs == null) {
             return new FKReference(null, null);
         }
 
-        List<String> fk_refs = new ArrayList<>();
-        List<String> fk_refs_by = new ArrayList<>();
+        List<String> fkRefs = new ArrayList<>();
+        List<String> fkRefsBy = new ArrayList<>();
 
-        for (Index fk_ix : fk_ixs) {
+        for (Index fk_ix : fkIxs) {
             if (!(fk_ix instanceof IndexImpl)) {
                 throw new IllegalStateException("Expected 'fk_ix' to be an instance of 'IndexImpl'");
             }
@@ -705,7 +697,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             // index. Jackcess exposes these underlying engine-level or relationship
             // indexes, which often carry internal or prefixed names like .rC rather than
             // friendly user names.
-            boolean ix_hidden = fk_ix.getName().startsWith(("."));
+            boolean ixHidden = fk_ix.getName().startsWith(("."));
 
             if (!childTable.equals(t.getName())) {
                 throw new IllegalStateException("Expected child table to match current table");
@@ -714,34 +706,34 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                 throw new IllegalStateException("Foreign key indexes not expected to also be primary key");
             }
 
-            String[] fk_cols = parentIndex.getColumns().stream()
+            String[] fkCols = parentIndex.getColumns().stream()
                     .map(c -> sqlNameQ(c.getName()))
                     .toArray(String[]::new);
 
-            if (ix_hidden) {
-                fk_refs_by.add(parentTable + joinWithParens(fk_cols)); // parent table REFERENCED BY child
+            if (ixHidden) {
+                fkRefsBy.add(parentTable + joinWithParens(fkCols)); // parent table REFERENCED BY child
             } else {
-                fk_refs.add(parentTable + joinWithParens(fk_cols)); // child table REFERENCES parent
+                fkRefs.add(parentTable + joinWithParens(fkCols)); // child table REFERENCES parent
             }
         }
 
-        fk_refs.sort(null);
-        fk_refs_by.sort(null);
+        fkRefs.sort(null);
+        fkRefsBy.sort(null);
 
-        StringJoiner sj_refs = new StringJoiner(", ");
-        for (String ref : fk_refs) {
-            sj_refs.add(ref);
+        StringJoiner sjRefs = new StringJoiner(", ");
+        for (String ref : fkRefs) {
+            sjRefs.add(ref);
         }
 
-        StringJoiner sj_refs_by = new StringJoiner(", ");
-        for (String ref : fk_refs_by) {
-            sj_refs_by.add(ref);
+        StringJoiner sjRefsBy = new StringJoiner(", ");
+        for (String ref : fkRefsBy) {
+            sjRefsBy.add(ref);
         }
 
-        String refs = (sj_refs.length() > 0) ? sj_refs.toString() : null;
-        String refs_by = (sj_refs_by.length() > 0) ? sj_refs_by.toString() : null;
+        String refs = (sjRefs.length() > 0) ? sjRefs.toString() : null;
+        String refsBy = (sjRefsBy.length() > 0) ? sjRefsBy.toString() : null;
 
-        return new FKReference(refs, refs_by);
+        return new FKReference(refs, refsBy);
     }
 
     /**
@@ -780,17 +772,17 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     }
 
     boolean columnHasNulls(Table t, Column c) {
-        String c_name = c.getName();
+        String colName = c.getName();
 
         try {
             for (Row row : t) {
-                Object v = row.get(c_name);
+                Object v = row.get(colName);
                 if (v == null) {
                     return true;
                 }
             }
-        } catch (java.time.DateTimeException e) {
-            stdErr().println(t.getName() + ": DateTimeException for column: " + c_name);
+        } catch (java.time.DateTimeException _) {
+            stdErr().println(t.getName() + ": DateTimeException for column: " + colName);
         }
 
         return false;
