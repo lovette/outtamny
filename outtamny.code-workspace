@@ -7,8 +7,6 @@
 	"settings": {
 		"java.configuration.updateBuildConfiguration": "automatic",
 		"java.symbols.includeSourceMethodDeclarations": true,
-		"java.format.settings.url": ".vscode/formatter.xml",
-		"java.format.settings.profile": "CustomWorkspaceProfile",
 		"java.test.config": {
 			"vmArgs": [
 				"-Xshare:off",
@@ -28,6 +26,20 @@
 				"alias": "Build, Test, Install",
 				"command": "clean install"
 			},
+			{
+				"alias": "Spotless apply format",
+				"command": "spotless:apply"
+			},
 		],
+		"emeraldwalk.runonsave": {
+			"commands": [
+				{
+					"match": "\\.java$",
+					"cmd": "mvn --batch-mode --quiet spotless:apply -DspotlessFiles=.*${relativeFile}",
+					"message": "Applying Spotless format to ${fileBasename}",
+					"showElapsed": true,
+				},
+			]
+		},
 	}
 }

@@ -156,15 +156,8 @@
         <version>3.11.0</version>
         <configuration>
           <java>
-            <eclipse>
-              <file>${project.basedir}/.vscode/formatter.xml</file>
-            </eclipse>
             <removeUnusedImports />
-            <importOrder>
-              <order>java,javax,org,com,</order>
-            </importOrder>
-            <trimTrailingWhitespace />
-            <endWithNewline />
+            <palantirJavaFormat />
           </java>
           <pom>
             <sortPom>
