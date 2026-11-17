@@ -102,8 +102,6 @@ public class SqliteTests extends SchemaCommandTestBase {
         String sqlFileName = "out.sql"; // override default name
         Path sqlFilePath = tempOutDir.resolve(sqlFileName);
 
-        // System.out.println(String.format("schema='%s', data='%s':", schema, data));
-
         executeSchemaCommand(sqlFilePath, args);
 
         List<String> outDirSqlFiles = listOutDirFiles("*.sql");

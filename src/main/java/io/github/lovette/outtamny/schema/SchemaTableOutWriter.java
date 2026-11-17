@@ -158,8 +158,6 @@ class SchemaTableOutWriter {
         boolean append = writerAppend;
         writerAppend = true; // next writer will append
 
-        // stdOut().println((append ? "Appending to " : "Writing to ") + writerPath);
-
         return Files.newBufferedWriter(writerPath, append ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
     }
 

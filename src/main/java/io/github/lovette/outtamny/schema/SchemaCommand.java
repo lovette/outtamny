@@ -507,12 +507,6 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             List<Index> uk_ixs = uk_ix_map.get(c_name);
             StringJoiner sj_col = new StringJoiner(" ");
 
-            // None of the columns in Money database have any properties...
-            // PropertyMap c_props = c.getProperties();
-            // if (!c_props.isEmpty()) {
-            // nullable = !((Boolean) c_props.getValue(PropertyMap.REQUIRED_PROP,
-            // Boolean.FALSE));
-            // }
             Boolean c_nullable = null;
 
             FKReference fk_ref = foreignKeyReferences(t, c, fk_ixs);
@@ -725,24 +719,6 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                     .map(c -> sqlNameQ(c.getName()))
                     .toArray(String[]::new);
 
-            // if (false) {
-            // String[] fk_cols_by = childIndex.getColumns().stream().map(c ->
-            // ident(c.getName()))
-            // .toArray(String[]::new);
-            // stdOut().println("--- " + fk_ix.getName() + ": " + t.getName() + "(" +
-            // t_c.getName() + ")");
-            // stdOut().println(String.format("C: %-15s | %-10s | %-10s | %s",
-            // childTable,
-            // childIndex.isPrimaryKey() ? "PRIMARY" : "",
-            // childIndex.isUnique() ? "UNIQUE" : "",
-            // Arrays.toString(fk_cols_by)));
-            // stdOut().println(String.format("P: %-15s | %-10s | %-10s | %s",
-            // parentTable,
-            // parentIndex.isPrimaryKey() ? "PRIMARY" : "",
-            // parentIndex.isUnique() ? "UNIQUE" : "",
-            // Arrays.toString(fk_cols)));
-            // }
-
             if (ix_hidden) {
                 fk_refs_by.add(parentTable + joinWithParens(fk_cols)); // parent table REFERENCED BY child
             } else {
@@ -816,11 +792,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                 }
             }
         } catch (java.time.DateTimeException e) {
-            // byte[] rawBytes = row.getBytes(c_name);
-            // String s = row.getString(c_name);
-            // if (s == null) {
             stdErr().println(t.getName() + ": DateTimeException for column: " + c_name);
-            // }
         }
 
         return false;

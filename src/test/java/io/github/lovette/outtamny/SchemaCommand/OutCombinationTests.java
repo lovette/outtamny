@@ -47,12 +47,9 @@ public class OutCombinationTests extends SchemaCommandTestBase {
     void testOutputCombination(String schema, String data) throws IOException {
         String[] args = {"-vv", "--schema-out", schema, "--data-out", data};
 
-        // System.out.println(String.format("schema='%s', data='%s':", schema, data));
-
         executeSchemaCommand(args);
 
         List<String> outDirContents = listOutDirContents();
-        // outDirContents.forEach(System.out::println);
 
         if (schema.equals("combined") && (data.equals("combined") || data.equals("none"))) {
             assertThat(outDirContents).containsOnly("sunset-sample.sql");
@@ -62,7 +59,6 @@ public class OutCombinationTests extends SchemaCommandTestBase {
             assertThat(outDirContents).containsOnly("sunset-sample.sql", "sunset-sample/");
 
             List<String> outSubDirContents = listOutDirFiles(Paths.get("sunset-sample/"));
-            // outSubDirContents.forEach(System.out::println);
 
             switch (schema) {
                 case "combined":
