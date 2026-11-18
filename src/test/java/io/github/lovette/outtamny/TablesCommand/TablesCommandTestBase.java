@@ -1,7 +1,9 @@
 package io.github.lovette.outtamny.TablesCommand;
 
 import io.github.lovette.outtamny.CommandTestBase;
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 
 public class TablesCommandTestBase extends CommandTestBase {
@@ -16,11 +18,7 @@ public class TablesCommandTestBase extends CommandTestBase {
      * @return a set each line of 'stdout'
      */
     protected Set<String> stdoutTableNames() {
-        Set<String> tablesOut = new java.util.LinkedHashSet<>();
-        for (String line : stdout().split("\n")) {
-            tablesOut.add(line);
-        }
-        return tablesOut;
+        return stdout().lines().collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
