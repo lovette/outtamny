@@ -4,6 +4,7 @@ import static io.github.lovette.outtamny.SharedUtils.getPathStem;
 import static io.github.lovette.outtamny.SharedUtils.getPathSuffix;
 import static io.github.lovette.outtamny.SharedUtils.joinWithParens;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.lovette.outtamny.BaseSubcommand;
 import io.github.lovette.outtamny.CommandUsageMixin;
 import io.github.lovette.outtamny.SharedUtils.Verbosity;
@@ -24,6 +25,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -33,6 +35,7 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
+import org.jspecify.annotations.Nullable;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
@@ -61,6 +64,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     }
 
     @Mixin
+    @Nullable
     CommandUsageMixin usageMixin;
 
     @Option(
@@ -69,6 +73,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             description =
                     "The name for combined schema file, the directory to write , or '-' for stdout. Defaults to MNYFILE's name and directory.",
             order = 1)
+    @Nullable
     private Path outDirOrFilePath;
 
     @Option(
@@ -92,6 +97,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             paramLabel = "name",
             description = "Limit output to given table. Can be specified multiple times.",
             order = 5)
+    @Nullable
     private List<String> filterTables;
 
     @Option(
@@ -110,12 +116,16 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     private boolean skipEmpty = false;
 
     @Parameters(index = "0", paramLabel = "MNYFILE", description = "Money data file (.mny).")
+    @Nullable
     private Path mnyPath;
 
     // foreignKeyReferences()
-    public record FKReference(String refs, String refs_by) {}
+    public record FKReference(
+            @Nullable String refs, @Nullable String refs_by) {}
 
+    @Nullable
     Path combinedSchemaPath;
+
     final Map<String, SchemaTableOut> tableOuts = new LinkedHashMap<>();
     final Map<Path, SchemaTableOutWriter> tableOutWriters = new LinkedHashMap<>();
 
@@ -140,6 +150,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     @Override
     public Integer call() throws IOException {
         if (mnyPath == null) {
+            Objects.requireNonNull(spec);
             throw new ParameterException(spec.commandLine(), "Error: MNYFILE path must be specified.");
         }
 
@@ -158,6 +169,8 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
         Path tableOutDirPath;
 
         if (isOutputStdout()) {
+            Objects.requireNonNull(outDirOrFilePath);
+
             if (getVerbosityLevel().isMoreThan(Verbosity.ERROR)) {
                 String err = "Error: Verbosity level must be quiet when output is to stdout.";
                 throw new UserFacingException(err);
@@ -173,13 +186,16 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
         } else {
             if (outDirOrFilePath == null) {
                 outDirOrFilePath = mnyPath.getParent();
+                if (outDirOrFilePath == null) {
+                    throw new IllegalStateException("Expected mnyPath to have a parent directory, but it was null.");
+                }
             } else {
                 outDirOrFilePath = outDirOrFilePath.toAbsolutePath().normalize();
             }
 
             if (Files.isDirectory(outDirOrFilePath)) {
                 combinedSchemaPath = outDirOrFilePath.resolve(getPathStem(mnyPath) + ".sql");
-            } else if (getPathSuffix(outDirOrFilePath).equalsIgnoreCase("sql")) {
+            } else if ("sql".equalsIgnoreCase(getPathSuffix(outDirOrFilePath))) {
                 combinedSchemaPath = outDirOrFilePath; // File will be overwritten if exists!
             } else if (Files.exists(outDirOrFilePath)) {
                 String err = "Error: '" + outDirOrFilePath + "': Already exists and will not be overwritten.";
@@ -190,6 +206,10 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
             }
 
             tableOutDirPath = combinedSchemaPath.getParent();
+            if (tableOutDirPath == null) {
+                String err = "Expected combinedSchemaPath to have a parent directory, but it was null.";
+                throw new IllegalStateException(err);
+            }
 
             if (!isSingleStreamOut()) {
                 // Write table schemas to a subdirectory named after the Money filename.
@@ -235,7 +255,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
      * @return true if the output is to standard output, false otherwise.
      */
     private boolean isOutputStdout() {
-        return outDirOrFilePath != null && outDirOrFilePath.toString().equals(OUT_STDOUT);
+        return outDirOrFilePath != null && OUT_STDOUT.equals(outDirOrFilePath.toString());
     }
 
     /**
@@ -261,6 +281,8 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
         // Set the stdout writer for all SchemaTableOutWriter objects.
         SchemaTableOutWriter.setStdoutWriter(stdOut());
+
+        Objects.requireNonNull(combinedSchemaPath);
 
         for (String tableName : tableNames) {
             Table t = db.getTable(tableName);
@@ -294,6 +316,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                     schemaWriter = getWriterForName.apply(tableName + "_" + TABLES_SQL);
                     indexWriter = getWriterForName.apply(tableName + "_" + INDEXES_SQL);
                 } else {
+                    Objects.requireNonNull(spec);
                     String err = "Invalid value for option '--schema-out': '" + schemaOutput + "'";
                     throw new ParameterException(spec.commandLine(), err);
                 }
@@ -311,6 +334,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                 } else if (dataOutput == OutputScheme.TABLE) {
                     dataWriter = getWriterForName.apply(tableName + "_" + DATA_SQL);
                 } else {
+                    Objects.requireNonNull(spec);
                     String err = "Invalid value for option '--data-out': '" + dataOutput + "'";
                     throw new ParameterException(spec.commandLine(), err);
                 }
@@ -413,11 +437,17 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
      * correct order.
      */
     private void writeCombinedSchema() throws IOException {
+        Objects.requireNonNull(combinedSchemaPath);
+
         SchemaTableOutWriter combinedWriter = new SchemaTableOutWriter(combinedSchemaPath);
-        Path schemaDir = combinedSchemaPath.getParent();
         LinkedHashSet<Path> schemaPaths = new LinkedHashSet<>();
         LinkedHashSet<Path> indexesPaths = new LinkedHashSet<>();
         LinkedHashSet<Path> dataPaths = new LinkedHashSet<>();
+
+        Path schemaDir = combinedSchemaPath.getParent();
+        if (schemaDir == null) {
+            throw new IllegalStateException("Expected combinedSchemaPath to have a parent directory.");
+        }
 
         for (SchemaTableOutWriter tow : tableOutWriters.values()) {
             combinedWriter.addSubWriter(tow);
@@ -425,14 +455,17 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
         for (SchemaTableOut to : tableOuts.values()) {
             if (to.schemaWritten) {
+                Objects.requireNonNull(to.schemaWriter);
                 Path relPath = to.schemaWriter.relativizeWriterPath(schemaDir);
                 schemaPaths.add(relPath);
             }
             if (to.indexWritten) {
+                Objects.requireNonNull(to.indexWriter);
                 Path relPath = to.indexWriter.relativizeWriterPath(schemaDir);
                 indexesPaths.add(relPath);
             }
             if (to.dataWritten) {
+                Objects.requireNonNull(to.dataWriter);
                 Path relPath = to.dataWriter.relativizeWriterPath(schemaDir);
                 dataPaths.add(relPath);
             }
@@ -493,8 +526,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
 
         sw.write("CREATE TABLE " + sqlNameQ(name) + " (\n");
 
-        for (int i = 0; i < cols.size(); i++) {
-            Column c = cols.get(i);
+        for (Column c : cols) {
             String colName = c.getName();
             List<Index> fkIxs = fkIxMap.get(colName);
             List<Index> pkIxs = pkIxMap.get(colName);
@@ -524,7 +556,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
                 if (!tablePkIsComposite) {
                     sjCol.add("PRIMARY KEY");
                 }
-                colNullable = false; // explicitly mark primary key columns as not nullable
+                colNullable = Boolean.FALSE; // explicitly mark primary key columns as not nullable
             }
 
             if (ukIxs != null) {
@@ -578,7 +610,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
      * @return the SQL INSERT INTO statement as a string
      * @throws IOException if an I/O error occurs while reading the Money data file.
      */
-    String writeInsertTable(Table t, List<? extends Column> cols) throws IOException {
+    String writeInsertTable(Table t, Collection<? extends Column> cols) throws IOException {
 
         StringWriter sw = new StringWriter();
 
@@ -622,7 +654,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
     String writeCreateIndexes(Table t) throws IOException {
 
         String name = t.getName();
-        List<String> indexes = new ArrayList<>();
+        List<String> indexes = new ArrayList<>(t.getIndexes().size());
 
         for (Index ix : t.getIndexes()) {
             if (ix.isForeignKey() || ix.isPrimaryKey()) {
@@ -672,7 +704,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
      *     indexes are provided
      * @throws IOException if an I/O error occurs while reading the Money data file.
      */
-    static FKReference foreignKeyReferences(Table t, List<Index> fkIxs) throws IOException {
+    static FKReference foreignKeyReferences(Table t, @Nullable Collection<Index> fkIxs) throws IOException {
 
         if (fkIxs == null) {
             return new FKReference(null, null);
@@ -761,7 +793,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
      * @return the SQL value
      */
     @Override
-    protected String sqlValue(Object obj) {
+    protected String sqlValue(@Nullable Object obj) {
         if (obj instanceof java.math.BigDecimal bd && moneyType == MoneyType.INTEGER) {
             return bd.setScale(4, RoundingMode.HALF_UP)
                     .movePointRight(4)
@@ -771,6 +803,7 @@ public class SchemaCommand extends BaseSubcommand implements Callable<Integer> {
         return super.sqlValue(obj);
     }
 
+    @SuppressFBWarnings("EXS_EXCEPTION_SOFTENING_RETURN_FALSE")
     boolean columnHasNulls(Table t, Column c) {
         String colName = c.getName();
 

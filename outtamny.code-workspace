@@ -7,6 +7,7 @@
 	"settings": {
 		"java.configuration.updateBuildConfiguration": "automatic",
 		"java.symbols.includeSourceMethodDeclarations": true,
+		"java.compile.nullAnalysis.mode": "disabled",
 		"java.test.config": {
 			"vmArgs": [
 				"-Xshare:off",
@@ -30,6 +31,14 @@
 				"alias": "Spotless apply format",
 				"command": "spotless:apply"
 			},
+			{
+				"alias": "Spotbugs check",
+				"command": "test-compile spotbugs:check"
+			},
+			{
+				"alias": "Spotbugs GUI",
+				"command": "test-compile spotbugs:gui"
+			}
 		],
 		"emeraldwalk.runonsave": {
 			"commands": [

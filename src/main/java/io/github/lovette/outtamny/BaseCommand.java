@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Spec;
 
@@ -13,8 +15,10 @@ public abstract class BaseCommand {
     // Picocli command context injected after instantiating command class and right
     // before invoking run() or call().
     @Spec
+    @Nullable
     protected CommandSpec spec;
 
+    @Nullable
     private Verbosity cachedVerbosity;
 
     public abstract static class LowercaseEnumCandidates<E extends Enum<E>> implements Iterable<String> {
@@ -39,6 +43,7 @@ public abstract class BaseCommand {
      * @return the PrintWriter for standard output.
      */
     protected PrintWriter stdOut() {
+        Objects.requireNonNull(spec);
         return spec.commandLine().getOut();
     }
 
@@ -49,6 +54,7 @@ public abstract class BaseCommand {
      * @return the PrintWriter for standard error output.
      */
     protected PrintWriter stdErr() {
+        Objects.requireNonNull(spec);
         return spec.commandLine().getErr();
     }
 
@@ -59,6 +65,7 @@ public abstract class BaseCommand {
      */
     protected Verbosity getVerbosityLevel() {
         if (cachedVerbosity == null) {
+            Objects.requireNonNull(spec);
             boolean[] verbosity = spec.findOption("verbose").getValue();
             cachedVerbosity = Verbosity.fromLevel(verbosity.length);
         }

@@ -4,10 +4,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 /** Base class for command-related tests that provides common setup and utility methods. */
 public class CommandTestBase extends AppTestBase {
     // Path to test MNYFILE. Typically initialzed in a 'BeforeEach' function.
+    @Nullable
     protected Path mnyPath;
 
     /**

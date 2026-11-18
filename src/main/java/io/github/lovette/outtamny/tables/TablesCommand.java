@@ -8,7 +8,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.concurrent.Callable;
+import org.jspecify.annotations.Nullable;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.ParameterException;
@@ -18,15 +20,18 @@ import picocli.CommandLine.Parameters;
 public class TablesCommand extends BaseSubcommand implements Callable<Integer> {
 
     @Mixin
+    @Nullable
     CommandUsageMixin usageMixin;
 
     @Parameters(index = "0", paramLabel = "MNYFILE", description = "Money data file (.mny).")
+    @Nullable
     private Path mnyPath;
 
     /** Subcommand entry point. */
     @Override
     public Integer call() throws IOException {
         if (mnyPath == null) {
+            Objects.requireNonNull(spec);
             throw new ParameterException(spec.commandLine(), "Error: MNYFILE path must be specified.");
         }
 

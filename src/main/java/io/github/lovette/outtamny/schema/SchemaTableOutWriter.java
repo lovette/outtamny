@@ -11,12 +11,13 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Handles writing output to a specific file for table schema and data. Ensures that the file is
  * created if it doesn't exist and appends to it if it does.
  */
-class SchemaTableOutWriter {
+final class SchemaTableOutWriter {
     private final java.util.Set<String> tableNames = new java.util.LinkedHashSet<>();
     private final java.util.Set<String> contentHints = new java.util.LinkedHashSet<>();
     private final Path writerPath; // absolute path or "-" for stdout
@@ -41,6 +42,7 @@ class SchemaTableOutWriter {
         }
     }
 
+    @Nullable
     static Writer stdoutWriter; // set with setStdoutWriter()
 
     /**
@@ -254,7 +256,7 @@ class SchemaTableOutWriter {
             // Wrap in single quotes to prevent issues on Windows!
             sw.write(".read '" + relPath + "'\n");
         }
-        sw.write("\n");
+        sw.write('\n');
 
         beginTransaction();
         writeString(sw);
@@ -270,7 +272,7 @@ class SchemaTableOutWriter {
         StringWriter sw = new StringWriter();
         sw.write("-- Disable foreign keys until the end.\n");
         sw.write("PRAGMA foreign_keys=OFF;\n");
-        sw.write("\n");
+        sw.write('\n');
 
         writeString(sw);
         needFooter = true;

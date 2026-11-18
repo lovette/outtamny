@@ -89,9 +89,17 @@ public class SharedUtils {
      * @return the stem of the file name (without its extension)
      */
     public static String getPathStem(Path p) {
-        String fileName = p.getFileName().toString();
-        if (fileName.contains(".")) fileName = fileName.substring(0, fileName.lastIndexOf('.'));
-        return fileName;
+        Path fileName = p.getFileName();
+
+        if (fileName != null) {
+            String fileNameStr = fileName.toString();
+            if (fileNameStr.contains(".")) {
+                fileNameStr = fileNameStr.substring(0, fileNameStr.lastIndexOf('.'));
+            }
+            return fileNameStr;
+        }
+
+        return "";
     }
 
     /**
@@ -101,8 +109,15 @@ public class SharedUtils {
      * @return the suffix (extension) or an empty string if none exists
      */
     public static String getPathSuffix(Path p) {
-        String fileName = p.getFileName().toString();
-        if (fileName.contains(".")) return fileName.substring(fileName.lastIndexOf('.') + 1);
+        Path fileName = p.getFileName();
+
+        if (fileName != null) {
+            String fileNameStr = fileName.toString();
+            if (fileNameStr.contains(".")) {
+                return fileNameStr.substring(fileNameStr.lastIndexOf('.') + 1);
+            }
+        }
+
         return "";
     }
 

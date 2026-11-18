@@ -1,13 +1,14 @@
 package io.github.lovette.outtamny;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.lovette.outtamny.schema.SchemaCommand;
 import io.github.lovette.outtamny.tables.TablesCommand;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.util.Properties;
+import org.jspecify.annotations.Nullable;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IExecutionExceptionHandler;
@@ -31,6 +32,7 @@ import picocli.CommandLine.UnmatchedArgumentException;
 public class App extends BaseCommand implements Runnable {
 
     @Mixin
+    @Nullable
     CommandUsageMixin usageMixin;
 
     // ScopeType.INHERIT allows option to be specified as both the App and
@@ -43,6 +45,7 @@ public class App extends BaseCommand implements Runnable {
             interactive = true,
             order = 2,
             scope = CommandLine.ScopeType.INHERIT)
+    @Nullable
     protected String mnyPasswordPrompt;
 
     @Option(
@@ -51,6 +54,7 @@ public class App extends BaseCommand implements Runnable {
             description = "The password for the Money data file (may be visible in shell history).",
             order = 2,
             scope = CommandLine.ScopeType.INHERIT)
+    @Nullable
     protected String mnyPasswordInline;
 
     @Option(
@@ -59,6 +63,7 @@ public class App extends BaseCommand implements Runnable {
             description = "The file containing the password for the Money data file.",
             order = 2,
             scope = CommandLine.ScopeType.INHERIT)
+    @Nullable
     protected Path mnyPasswordFile;
 
     @Option(
@@ -67,6 +72,7 @@ public class App extends BaseCommand implements Runnable {
             description = "The environment variable containing the password for the Money data file.",
             order = 2,
             scope = CommandLine.ScopeType.INHERIT)
+    @Nullable
     protected String mnyPasswordEnv;
 
     @Option(
@@ -74,6 +80,7 @@ public class App extends BaseCommand implements Runnable {
             description = "Increase verbose level.",
             scope = CommandLine.ScopeType.INHERIT,
             order = 15)
+    @SuppressFBWarnings("URF_UNREAD_FIELD")
     private boolean[] verbosity = new boolean[0];
 
     @Option(
@@ -155,24 +162,20 @@ public class App extends BaseCommand implements Runnable {
         });
 
         cmd.setExecutionExceptionHandler((Exception ex, CommandLine commandLine, ParseResult parseResult) -> {
-            int exitCode;
-
             // Note: picocli handles 'ParameterException' separately, they do not trigger
             // this handler.
 
-            if (ex instanceof FileNotFoundException || ex instanceof FileAlreadyExistsException) {
-                // Print only the error message, no usage, no stack trace.
-                commandLine.getErr().println(commandLine.getColorScheme().errorText(ex.getMessage()));
-                exitCode = commandLine.getCommandSpec().exitCodeOnExecutionException();
-            } else if (ex instanceof UserFacingException ufe) {
-                // Print only the error message, no usage, no stack trace.
-                commandLine.getErr().println(commandLine.getColorScheme().errorText(ufe.getMessage()));
-                exitCode = ufe.getExitCode();
-            } else {
-                exitCode = defaultExceptionHandler.handleExecutionException(ex, commandLine, parseResult);
-            }
-
-            return exitCode;
+            return switch (ex) {
+                case IOException ioe -> {
+                    commandLine.getErr().println(commandLine.getColorScheme().errorText(ioe.getMessage()));
+                    yield commandLine.getCommandSpec().exitCodeOnExecutionException();
+                }
+                case UserFacingException ufe -> {
+                    commandLine.getErr().println(commandLine.getColorScheme().errorText(ufe.getMessage()));
+                    yield ufe.getExitCode();
+                }
+                default -> defaultExceptionHandler.handleExecutionException(ex, commandLine, parseResult);
+            };
         });
 
         return cmd;

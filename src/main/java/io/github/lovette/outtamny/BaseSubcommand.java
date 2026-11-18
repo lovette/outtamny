@@ -11,20 +11,23 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
 
 public class BaseSubcommand extends BaseCommand {
 
     @ParentCommand
+    @Nullable
     protected App parent; // Parent command reference
 
     @Option(
@@ -42,32 +45,34 @@ public class BaseSubcommand extends BaseCommand {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    protected String resolveMnyPassword() throws FileNotFoundException, IOException {
-        if (parent.mnyPasswordPrompt != null) {
-            return parent.mnyPasswordPrompt;
+    protected String resolveMnyPassword() throws IOException {
+        App app = Objects.requireNonNull(this.parent);
+
+        if (app.mnyPasswordPrompt != null) {
+            return app.mnyPasswordPrompt;
         }
 
-        if (parent.mnyPasswordInline != null) {
-            return parent.mnyPasswordInline;
+        if (app.mnyPasswordInline != null) {
+            return app.mnyPasswordInline;
         }
 
-        if (parent.mnyPasswordEnv != null) {
-            String mnyPassword = System.getenv(parent.mnyPasswordEnv);
+        if (app.mnyPasswordEnv != null) {
+            String mnyPassword = System.getenv(app.mnyPasswordEnv);
             if (mnyPassword == null) {
-                String errmsg = "Error: Environment variable '" + parent.mnyPasswordEnv + "' is not set.";
+                String errmsg = "Error: Environment variable '" + app.mnyPasswordEnv + "' is not set.";
                 throw new UserFacingException(errmsg);
             }
 
             return mnyPassword;
         }
 
-        if (parent.mnyPasswordFile != null) {
-            parent.mnyPasswordFile = parent.mnyPasswordFile.toAbsolutePath().normalize();
-            if (!Files.isRegularFile(parent.mnyPasswordFile)) {
-                throw new FileNotFoundException("Error: '" + parent.mnyPasswordFile + "': No such file.");
+        if (app.mnyPasswordFile != null) {
+            app.mnyPasswordFile = app.mnyPasswordFile.toAbsolutePath().normalize();
+            if (!Files.isRegularFile(app.mnyPasswordFile)) {
+                throw new FileNotFoundException("Error: '" + app.mnyPasswordFile + "': No such file.");
             }
 
-            return Files.readString(parent.mnyPasswordFile).stripTrailing();
+            return Files.readString(app.mnyPasswordFile).stripTrailing();
         }
 
         return "";
@@ -105,6 +110,7 @@ public class BaseSubcommand extends BaseCommand {
      * @param error the exception that occurred
      * @return the substitute value for the column, or null if none is available
      */
+    @Nullable
     Object handleColumnError(Column column, byte[] columnData, Location location, Exception error) {
         String err = String.format(
                 "Error reading row/col value: %s(%s): %s",
@@ -142,7 +148,7 @@ public class BaseSubcommand extends BaseCommand {
      * @return the list of table names in the Money database, sorted alphabetically
      * @throws IOException
      */
-    protected List<String> getMnyTableNames(Database db, List<String> filterTables) throws IOException {
+    protected List<String> getMnyTableNames(Database db, @Nullable Collection<String> filterTables) throws IOException {
         List<String> t_names = new ArrayList<>(db.getTableNames());
         Collections.sort(t_names);
 
@@ -175,14 +181,14 @@ public class BaseSubcommand extends BaseCommand {
      * @param obj the value to convert
      * @return the SQL value
      */
-    protected String sqlValue(Object obj) {
+    protected String sqlValue(@Nullable Object obj) {
         return switch (obj) {
             case null -> "NULL";
             case Boolean b -> Boolean.TRUE.equals(b) ? "1" : "0";
-            case Byte _, Short _, Integer _, Long _, java.math.BigInteger _ -> obj.toString();
             case Float f -> (Float.isNaN(f) || Float.isInfinite(f)) ? "NULL" : f.toString();
             case Double d -> (Double.isNaN(d) || Double.isInfinite(d)) ? "NULL" : d.toString();
             case java.math.BigDecimal bd -> "'" + bd.toPlainString() + "'"; // let SQlite convert to float itself
+            case Number _ -> obj.toString(); // Byte _, Short _, Integer _, Long _, java.math.BigInteger
             case byte[] bytes -> "X'" + java.util.HexFormat.of().formatHex(bytes) + "'";
             default -> "'" + obj.toString().replace("'", "''") + "'";
         };
@@ -405,13 +411,14 @@ public class BaseSubcommand extends BaseCommand {
      *     directory path
      * @return the output path for the Money file
      */
-    public static Path getMnyFileOutPath(Path inFilePath, Path outDirPath, String fileName) {
-        // Output directory based on Money file name.
-        outDirPath = Paths.get(outDirPath.toString(), SharedUtils.safeFileName(SharedUtils.getPathStem(inFilePath)));
+    public static Path getMnyFileOutPath(Path inFilePath, Path outDirPath, @Nullable String fileName) {
+        String safeInFileName = SharedUtils.safeFileName(SharedUtils.getPathStem(inFilePath));
+
+        outDirPath = outDirPath.resolve(safeInFileName);
         if (fileName == null) {
             return outDirPath;
         }
 
-        return Paths.get(outDirPath.toString(), fileName);
+        return outDirPath.resolve(fileName);
     }
 }
